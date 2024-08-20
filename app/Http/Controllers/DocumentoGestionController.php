@@ -33,11 +33,35 @@ class DocumentoGestionController extends Controller
             'descripcion' => 'required|string|max:255',
             'costo' => 'required|integer',
             'recursos' => 'required|string|max:255',
+            'domain_id' => 'required|integer',
+            'user_id' => 'required|integer'    
         ]);
+    
+        // Asegúrate de que estos datos existan en el request
         $request->merge(['estado' => 1]);
         $parametro = DocumentoGestion::create($request->all());
+    
         return response()->json($parametro, 201);
     }
+
+    public function getAlumnoDocuments($domain_id, $user_id)
+{
+
+    $documentos = DocumentoGestion::where('domain_id', $domain_id)
+        ->where('user_id', $user_id) 
+        ->where('estado', 1) 
+        ->get();
+        
+    if ($documentos) {
+        return response()->json([
+            'responseCode' => 0,
+            'response' => $documentos
+        ], 200);
+    }
+
+    return response()->json('Record not found', 404);
+}
+
 
     public function show($domain_id,$id)
     {

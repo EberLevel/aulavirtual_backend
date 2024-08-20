@@ -68,6 +68,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('documento-gestion/{id}', 'DocumentoGestionController@update');
     $router->put('documento-gestion-eliminar/{id}', 'DocumentoGestionController@destroy');
     $router->get('documento-gestion-codigo', 'DocumentoGestionController@generateCode');
+    $router->get('alumnos/{domain_id}/{user_id}/documentos', 'DocumentoGestionController@getAlumnoDocuments');
 
     $router->get('docentes/imagen','DocenteController@imagen');
     $router->get('docentes/listar/{domain_id}','DocenteController@index');
@@ -75,6 +76,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('docentes/registrar','DocenteController@store');
     $router->put('docentes/actualizar/{id}','DocenteController@update');
     $router->get('docentes/eliminar/{id}','DocenteController@destroy');
+
 
     $router->get('cursos', 'CursoController@index');
     $router->post('cursos', 'CursoController@store');
@@ -118,9 +120,10 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@update');
     $router->delete('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@destroy');
 
+    $router->get('alumnos/logged/{alumno_id}/{dominio}', 'AlumnoController@getLoggedAlumno');
+    $router->get('alumnos/{id}/{dominio}', 'AlumnoController@show');
     $router->get('alumnos/{dominio}', 'AlumnoController@index');
     $router->post('alumnos', 'AlumnoController@store');
-    $router->get('alumnos/{id}/{dominio}', 'AlumnoController@show');
     $router->delete('alumnos/{id}/{dominio}', 'AlumnoController@destroy');
 
 
