@@ -1,0 +1,17 @@
+@url_api = http://127.0.0.1:8000/api
+@domain=test
+
+### Action ###
+### Index
+GET {{url_api}}/{{domain}}/organizacion-institucional/maintendance/action
+Content-Type: application/json
+
+
+### Store
+POST {{url_api}}/{{domain}}/organizacion-institucional/maintendance/action
+Content-Type: application/json
+
+
+### Create
+POST {{url_api}}/{{domain}}/organizacion-institucional/maintendance/action
+Content-Type: application/json
