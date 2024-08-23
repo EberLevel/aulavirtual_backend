@@ -35,6 +35,24 @@ class DocenteController extends Controller
         return response()->json(['Exito' => true, 'Datos' => $docente], 200);
     }
 
+    public function getLoggedDocente($docente_id, $dominio) {
+        $docente = Docente::leftJoin('domains', 'domains.id', '=', 'docentes.domain_id')
+            ->select(
+                'docentes.*',
+                'domains.nombre as institucion'
+            )
+            ->where('docentes.id', $docente_id)
+            ->where('docentes.domain_id', $dominio)
+            ->first();
+    
+        if ($docente) {
+            return response()->json($docente);
+        }
+    
+        return response()->json('Docente no encontrado', 404);
+    }
+
+    
     public function imagen(Request $request)
     {
         $base64Image = $request->input('base64');
