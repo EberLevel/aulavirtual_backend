@@ -20,9 +20,9 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('test', function(){
         dd(1);
     });
-    $router->get('usuarios/{domain_id}','UsuarioController@index');
-    $router->post('usuarios','UsuarioController@store');
-    $router->delete('usuarios/{id}','UsuarioController@destroy');
+    $router->get('users/{domain_id}','UsuarioController@index');
+    $router->post('users','UsuarioController@store');
+    $router->delete('users/{id}','UsuarioController@destroy');
     $router->post('login','LoginController@login');
 
     $router->get('maestros', 'MaestroController@index');
@@ -225,5 +225,6 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
         $router->put('action/{domain_id}/{id}', 'AccionController@update');
         $router->delete('action/{domain_id}/{id}', 'AccionController@destroy');
     });
+    
 });
 

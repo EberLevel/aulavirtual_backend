@@ -12,14 +12,14 @@ class UsuarioController extends Controller
     use UserTrait;
     public function index($domain_id){
         if(!$domain_id){
-            $usuarios=DB::table('users')->select('users.id','name','email','nombre')->join('rol','users.rol_id','=','rol.id')->get();
+            $users=DB::table('users')->select('users.id','name','email','nombre')->join('rol','users.rol_id','=','rol.id')->get();
         }else{
-            $usuarios=DB::table('users')->select('users.id','name','email','nombre')->join('rol','users.rol_id','=','rol.id')->where('domain_id',$domain_id)->get();
+            $users=DB::table('users')->select('users.id','name','email','nombre')->join('rol','users.rol_id','=','rol.id')->where('domain_id',$domain_id)->get();
         }
         if($domain_id == 0){
-            $usuarios=DB::table('users')->select('users.id','name','email','nombre')->join('rol','users.rol_id','=','rol.id')->get();
+            $users=DB::table('users')->select('users.id','name','email','nombre')->join('rol','users.rol_id','=','rol.id')->get();
         }
-        return $usuarios;
+        return $users;
     }
     public function store(Request $request){
         $this->validate($request, [
