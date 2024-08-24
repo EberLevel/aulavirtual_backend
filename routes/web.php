@@ -181,6 +181,13 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->delete('ciclos/{domain_id}/{id}', 'CicloController@destroy');
     $router->post('ciclos-orden', 'CicloController@orden');
 
+//Promociones
+    $router->get('promociones/{domain_id}', 'PromocionController@index');  
+    $router->post('promociones', 'PromocionController@store');  
+    $router->get('promocion/{id}', 'PromocionController@show');  
+    $router->put('promociones/{id}', 'PromocionController@update'); 
+    $router->delete('promociones/{id}', 'PromocionController@destroy'); 
+
     //estado
     $router->get('estados/{domain_id}', 'EstadoController@index');
     $router->post('estados/{domain_id}', 'EstadoController@store');
