@@ -23,22 +23,21 @@ class PromocionController extends Controller
      */
     public function store(Request $request)
     {
-        // Validación de los campos necesarios
-        $request->validate([
+        // Usamos el validador manualmente en lugar de Request::validate()
+        $validator = Validator::make($request->all(), [
             'nombre_promocion' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
+            'descripcion' => 'string|max:255',
             'fecha_inscripcion' => 'required|date',
             'domain_id' => 'required|exists:domains,id',
         ]);
-
-        // Crear la promoción
-        $promocion = Promocion::create([
-            'nombre_promocion' => $request->nombre_promocion,
-            'descripcion' => $request->descripcion,
-            'fecha_inscripcion' => $request->fecha_inscripcion,
-            'domain_id' => $request->domain_id,
-        ]);
-
+    
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+    
+        // Después de pasar la validación, creamos la promoción
+        $promocion = Promocion::create($request->all());
+    
         return response()->json(['message' => 'Promoción creada correctamente', 'data' => $promocion], 201);
     }
 
