@@ -13,6 +13,6 @@ class VinculoLaboral extends Model
     protected $fillable = [
 
         'nombre',
-
+        'domain_id'
     ];
 }

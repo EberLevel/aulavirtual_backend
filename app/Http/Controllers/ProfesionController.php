@@ -4,25 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Profesion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ProfesionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    
+    public function index($domain_id)  // Recibe el parámetro domain_id
     {
-        $domainId = $request->user()->domain_id;
-        $profesion = Profesion::paginate(10);
-        return response()->json($profesion, 200);
-    }
+        // Obtener las profesiones filtradas por el domain_id
+        $profesiones = Profesion::where('domain_id', $domain_id)->paginate(10);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return response()->json($profesiones, 200);
     }
 
     /**
@@ -30,14 +22,24 @@ class ProfesionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-
-            'nombre' => 'required',
+        // Validación de los datos de entrada usando Validator
+        $validator = Validator::make($request->all(), [
+            'nombre' => 'required|string|max:191',
+            'domain_id' => 'required|integer|exists:domains,id',
         ]);
 
+        // Si hay errores de validación, retornar con un código 400
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        // Crear una nueva profesión con los datos proporcionados
         $profesion = Profesion::create($request->all());
 
-        return response()->json(['message' => 'Profesion creada correctamente', 'data' => $profesion], 201);
+        return response()->json([
+            'message' => 'Profesión creada correctamente',
+            'data' => $profesion,
+        ], 201);
     }
 
     /**
@@ -45,21 +47,15 @@ class ProfesionController extends Controller
      */
     public function show($id)
     {
+        // Buscar la profesión por ID
         $profesion = Profesion::find($id);
 
+        // Si no se encuentra la profesión, retornar error 404
         if (!$profesion) {
-            return response()->json(['message' => 'Profesion  no encontrada'], 404);
+            return response()->json(['message' => 'Profesión no encontrada'], 404);
         }
 
         return response()->json(['data' => $profesion], 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -67,20 +63,32 @@ class ProfesionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-
-            'nombre' => 'required',
+        // Validación de los datos de entrada usando Validator
+        $validator = Validator::make($request->all(), [
+            'nombre' => 'required|string|max:191',
+            'domain_id' => 'required|integer|exists:domains,id',
         ]);
 
-        $profesion = Profesion::find($id);
-
-        if (!$profesion) {
-            return response()->json(['message' => 'Profesion no encontrada'], 404);
+        // Si hay errores de validación, retornar con un código 400
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
+        // Buscar la profesión por ID
+        $profesion = Profesion::find($id);
+
+        // Si no se encuentra la profesión, retornar error 404
+        if (!$profesion) {
+            return response()->json(['message' => 'Profesión no encontrada'], 404);
+        }
+
+        // Actualizar la profesión con los nuevos datos
         $profesion->update($request->all());
 
-        return response()->json(['message' => 'Profesion actualizado correctamente', 'data' => $profesion], 200);
+        return response()->json([
+            'message' => 'Profesión actualizada correctamente',
+            'data' => $profesion,
+        ], 200);
     }
 
     /**
@@ -88,14 +96,17 @@ class ProfesionController extends Controller
      */
     public function destroy($id)
     {
+        // Buscar la profesión por ID
         $profesion = Profesion::find($id);
 
+        // Si no se encuentra la profesión, retornar error 404
         if (!$profesion) {
-            return response()->json(['message' => 'Profesion no encontrada'], 404);
+            return response()->json(['message' => 'Profesión no encontrada'], 404);
         }
 
+        // Eliminar la profesión
         $profesion->delete();
 
-        return response()->json(['message' => 'Profesion eliminada correctamente'], 204);
+        return response()->json(['message' => 'Profesión eliminada correctamente'], 204);
     }
 }

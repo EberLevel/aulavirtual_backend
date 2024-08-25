@@ -17,13 +17,13 @@ use Illuminate\Support\Facades\Route;
 
 $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']], function () use ($router) {
 
-    $router->get('test', function(){
+    $router->get('test', function () {
         dd(1);
     });
-    $router->get('usuarios/{domain_id}','UsuarioController@index');
-    $router->post('usuarios','UsuarioController@store');
-    $router->delete('usuarios/{id}','UsuarioController@destroy');
-    $router->post('login','LoginController@login');
+    $router->get('usuarios/{domain_id}', 'UsuarioController@index');
+    $router->post('usuarios', 'UsuarioController@store');
+    $router->delete('usuarios/{id}', 'UsuarioController@destroy');
+    $router->post('login', 'LoginController@login');
 
     $router->get('maestros', 'MaestroController@index');
     $router->post('maestros', 'MaestroController@store');
@@ -71,12 +71,12 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('alumnos/{domain_id}/{user_id}/documentos', 'DocumentoGestionController@getAlumnoDocuments');
 
     $router->get('docentes/logged/{docente_id}/{dominio}', 'DocenteController@getLoggedDocente');
-    $router->get('docentes/imagen','DocenteController@imagen');
-    $router->get('docentes/listar/{domain_id}','DocenteController@index');
-    $router->get('docentes/listar/{domain_id}/{id}','DocenteController@show');
-    $router->post('docentes/registrar','DocenteController@store');
-    $router->put('docentes/actualizar/{id}','DocenteController@update');
-    $router->get('docentes/eliminar/{id}','DocenteController@destroy');
+    $router->get('docentes/imagen', 'DocenteController@imagen');
+    $router->get('docentes/listar/{domain_id}', 'DocenteController@index');
+    $router->get('docentes/listar/{domain_id}/{id}', 'DocenteController@show');
+    $router->post('docentes/registrar', 'DocenteController@store');
+    $router->put('docentes/actualizar/{id}', 'DocenteController@update');
+    $router->get('docentes/eliminar/{id}', 'DocenteController@destroy');
 
 
     $router->get('cursos', 'CursoController@index');
@@ -151,6 +151,61 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('calendario/alumno', 'CalendarioController@getAlumnoCalendario');
     $router->post('calendario/docente', 'CalendarioController@getDocenteCalendario');
 
+    // Grado de Instrucción
+    $router->get('grado-instrucciones/{domain_id}', 'GradoInstruccionController@index');
+    $router->post('grado-instruccion', 'GradoInstruccionController@store');
+    $router->get('grado-instruccion/{id}', 'GradoInstruccionController@show');
+    $router->put('grado-instruccion/{id}', 'GradoInstruccionController@update');
+    $router->delete('grado-instruccion/{id}', 'GradoInstruccionController@destroy');
+
+    // Vinculo Laboral
+    $router->get('vinculos-laborales/{domain_id}', 'VinculoLaboralController@index');
+    $router->post('vinculo-laboral', 'VinculoLaboralController@store');
+    $router->get('vinculo-laboral/{id}', 'VinculoLaboralController@show');
+    $router->put('vinculo-laboral/{id}', 'VinculoLaboralController@update');
+    $router->delete('vinculo-laboral/{id}', 'VinculoLaboralController@destroy');
+
+    // Nivel de Cargo
+    $router->get('niveles-cargo/{domain_id}', 'NivelCargoController@index');
+    $router->post('nivel-cargo', 'NivelCargoController@store');
+    $router->get('nivel-cargo/{id}', 'NivelCargoController@show');
+    $router->put('nivel-cargo/{id}', 'NivelCargoController@update');
+    $router->delete('nivel-cargo/{id}', 'NivelCargoController@destroy');
+
+    // Modalidades de Puesto
+    $router->get('modalidades-puesto/{domain_id}', 'ModalidadPuestoController@index');
+    $router->post('modalidad-puesto', 'ModalidadPuestoController@store');
+    $router->get('modalidad-puesto/{id}', 'ModalidadPuestoController@show');
+    $router->put('modalidad-puesto/{id}', 'ModalidadPuestoController@update');
+    $router->delete('modalidad-puesto/{id}', 'ModalidadPuestoController@destroy');
+
+    //Profesiones
+    $router->get('profesiones/{domain_id}', 'ProfesionController@index');
+    $router->post('profesion', 'ProfesionController@store');
+    $router->get('profesion/{id}', 'ProfesionController@show');
+    $router->put('profesion/{id}', 'ProfesionController@update');
+    $router->delete('profesion/{id}', 'ProfesionController@destroy');
+
+    // Rutas para EstadoAvance
+    $router->get('estados-avance/{domain_id}', 'EstadoAvanceController@index');
+    $router->post('estado-avance', 'EstadoAvanceController@store');
+    $router->get('estado-avance/{id}', 'EstadoAvanceController@show');
+    $router->put('estado-avance/{id}', 'EstadoAvanceController@update');
+    $router->delete('estado-avance/{id}', 'EstadoAvanceController@destroy');
+
+    //Escala
+    $router->get('escalas/{domain_id}', 'EscalaController@index');
+    $router->post('escala', 'EscalaController@store');
+    $router->get('escala/{id}', 'EscalaController@show');
+    $router->put('escala/{id}', 'EscalaController@update');
+    $router->delete('escala/{id}', 'EscalaController@destroy');
+
+    //Año - Afiliado al Paritdo en Frontend
+    $router->get('anos/{domain_id}', 'AnoController@index');
+    $router->post('ano', 'AnoController@store');
+    $router->get('ano/{id}', 'AnoController@show');
+    $router->put('ano/{id}', 'AnoController@update');
+    $router->delete('ano/{id}', 'AnoController@destroy');
 
     //preguntas routes
     $router->get('preguntas/{domain_id}/{evaluacion_id}', 'PreguntaController@index');
@@ -181,12 +236,12 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->delete('ciclos/{domain_id}/{id}', 'CicloController@destroy');
     $router->post('ciclos-orden', 'CicloController@orden');
 
-//Promociones
-    $router->get('promociones/{domain_id}', 'PromocionController@index');  
-    $router->post('promociones', 'PromocionController@store');  
-    $router->get('promocion/{id}', 'PromocionController@show');  
-    $router->put('promociones/{id}', 'PromocionController@update'); 
-    $router->delete('promociones/{id}', 'PromocionController@destroy'); 
+    //Promociones
+    $router->get('promociones/{domain_id}', 'PromocionController@index');
+    $router->post('promociones', 'PromocionController@store');
+    $router->get('promocion/{id}', 'PromocionController@show');
+    $router->put('promociones/{id}', 'PromocionController@update');
+    $router->delete('promociones/{id}', 'PromocionController@destroy');
 
     //estado
     $router->get('estados/{domain_id}', 'EstadoController@index');
@@ -229,7 +284,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     Route::get('obtener-preguntas-corregidas/{pregunta_id}', 'PreguntaAlumnoController@obtenerPreguntasNoCorregidas');
 
     //Ceiber Conrago Garibay Choque - 2024-08-10 Subgrupo de rutas para las apis de organizacion institucional
-    $router->group(['prefix' => 'organizacion-institucional'], function() use ($router){
+    $router->group(['prefix' => 'organizacion-institucional'], function () use ($router) {
         //Mantenimientos
         $router->get('action/{domain_id}', 'AccionController@index');
         $router->get('action/get/{id}', 'AccionController@show');
@@ -238,4 +293,3 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
         $router->delete('action/{domain_id}/{id}', 'AccionController@destroy');
     });
 });
-
