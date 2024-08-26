@@ -206,7 +206,14 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('ano/{id}', 'AnoController@show');
     $router->put('ano/{id}', 'AnoController@update');
     $router->delete('ano/{id}', 'AnoController@destroy');
-
+    
+    //Ocupacion
+    $router->get('ocupaciones-actuales/{domain_id}', 'OcupacionActualController@index');  
+    $router->post('ocupacion-actual', 'OcupacionActualController@store');  
+    $router->get('ocupacion-actual/{id}', 'OcupacionActualController@show');  
+    $router->put('ocupacion-actual/{id}', 'OcupacionActualController@update');  
+    $router->delete('ocupacion-actual/{id}', 'OcupacionActualController@destroy');
+    
     //preguntas routes
     $router->get('preguntas/{domain_id}/{evaluacion_id}', 'PreguntaController@index');
     $router->post('preguntas', 'PreguntaController@store');
