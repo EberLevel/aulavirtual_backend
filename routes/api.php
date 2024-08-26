@@ -20,8 +20,8 @@ $router->group(['middleware' => 'auth'], function () use ($router) {
     $router->get('test', function(){
         dd(1);
     });
-    $router->get('usuarios','UsuarioController@index');
-    $router->post('usuarios','UsuarioController@store');
+    $router->get('users','UsuarioController@index');
+    $router->post('users','UsuarioController@store');
 
     $router->get('maestros', 'MaestroController@index');
     $router->post('maestros', 'MaestroController@store');

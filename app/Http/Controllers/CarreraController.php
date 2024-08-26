@@ -22,7 +22,7 @@ class CarreraController extends Controller
        $carreras = DB::table('carreras as c')
         ->leftJoin('cursos as c2', 'c.id', '=', 'c2.carrera_id')
         ->select('c.*', DB::raw('GROUP_CONCAT(c2.nombre) as cursos'), DB::raw('SUM(c2.cantidad_de_creditos) as total_creditos'))
-        ->groupBy('c.id')
+        ->groupBy('c.id','c.codigo','c.nombres','c.domain_id','c.created_at','c.updated_at')
         ->where('c.domain_id', $dominio_id)
         ->get();
 

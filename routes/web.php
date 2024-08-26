@@ -299,4 +299,5 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
         $router->put('action/{domain_id}/{id}', 'AccionController@update');
         $router->delete('action/{domain_id}/{id}', 'AccionController@destroy');
     });
+    
 });
