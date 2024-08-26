@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EstadoAvance extends Model
+class OcupacionActual extends Model
 {
     use HasFactory;
-    protected $table = 'estado_avance';
+    protected $table = 'ocupacion_actual';
 
     protected $fillable = [
 

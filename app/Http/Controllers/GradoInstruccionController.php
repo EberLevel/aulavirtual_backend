@@ -4,43 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\GradoInstruccion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class GradoInstruccionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($domain_id)
     {
-        $domainId = $request->user()->domain_id;
-        $gradoInstrucion = GradoInstruccion::paginate(10);
-
-        return response()->json($gradoInstrucion, 200);
+        $gradoInstruccion = GradoInstruccion::where('domain_id', $domain_id)->paginate(10);
+    
+        return response()->json($gradoInstruccion, 200);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+    
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
-
+        // Validar los datos del request
+        $validator = Validator::make($request->all(), [
             'nombre' => 'required',
             'nivel' => 'required',
-            'porcentaje' => 'required',
+            'porcentaje' => 'required|numeric',
         ]);
-
+    
+        // Si la validación falla, retorna un error
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+    
+        // Si la validación es exitosa, crear el registro
         $gradoInstrucion = GradoInstruccion::create($request->all());
-
-        return response()->json(['message' => 'Grado de instrucción  creado correctamente', 'data' => $gradoInstrucion], 201);
+    
+        return response()->json(['message' => 'Grado de instrucción creado correctamente', 'data' => $gradoInstrucion], 201);
     }
 
     /**
@@ -51,18 +50,10 @@ class GradoInstruccionController extends Controller
         $gradoInstrucion = GradoInstruccion::find($id);
 
         if (!$gradoInstrucion) {
-            return response()->json(['message' => 'Grado de instrucción  no encontrado'], 404);
+            return response()->json(['message' => 'Grado de instrucción no encontrado'], 404);
         }
 
         return response()->json(['data' => $gradoInstrucion], 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -70,23 +61,31 @@ class GradoInstruccionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-
+        // Validar los datos del request
+        $validator = Validator::make($request->all(), [
             'nombre' => 'required',
             'nivel' => 'required',
-            'porcentaje' => 'required',
+            'porcentaje' => 'required|numeric',
         ]);
-
+    
+        // Si la validación falla, retorna un error
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+    
+        // Si la validación es exitosa, buscar el registro por ID
         $gradoInstrucion = GradoInstruccion::find($id);
-
+    
         if (!$gradoInstrucion) {
             return response()->json(['message' => 'Grado de instrucción no encontrado'], 404);
         }
-
+    
+        // Actualizar el grado de instrucción
         $gradoInstrucion->update($request->all());
-
+    
         return response()->json(['message' => 'Grado de instrucción actualizado correctamente', 'data' => $gradoInstrucion], 200);
     }
+
     /**
      * Remove the specified resource from storage.
      */

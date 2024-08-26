@@ -4,25 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Escala;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class EscalaController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($domain_id)
     {
-        $escala = Escala::paginate(10);
-
+        // Filtrar por domain_id
+        $escala = Escala::where('domain_id', $domain_id)->paginate(10);
         return response()->json($escala, 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -30,16 +23,21 @@ class EscalaController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-
-            'nombre' => 'required',
-            'c' => 'required',
-            'color' => 'required',
+        // Validaciones
+        $validator = Validator::make($request->all(), [
+            'nombre' => 'required|string|max:255',
+            'color' => 'required|string|max:7',
+            'c' => 'nullable|string|max:255',
+            'domain_id' => 'required|numeric|exists:domains,id',
         ]);
 
-        $escala = Escala::create($request->all());
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-        return response()->json(['message' => 'escala creada correctamente', 'data' => $escala], 201);
+        // Crear la escala
+        $escala = Escala::create($request->all());
+        return response()->json(['message' => 'Escala creada correctamente', 'data' => $escala], 201);
     }
 
     /**
@@ -50,18 +48,10 @@ class EscalaController extends Controller
         $escala = Escala::find($id);
 
         if (!$escala) {
-            return response()->json(['message' => 'escala no encontrada'], 404);
+            return response()->json(['message' => 'Escala no encontrada'], 404);
         }
 
         return response()->json(['data' => $escala], 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -69,22 +59,27 @@ class EscalaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-
-            'nombre' => 'required',
-            'c' => 'required',
-            'color' => 'required',
+        // Validaciones
+        $validator = Validator::make($request->all(), [
+            'nombre' => 'required|string|max:255',
+            'color' => 'required|string|max:7',
+            'c' => 'nullable|string|max:255',
+            'domain_id' => 'required|numeric|exists:domains,id',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
         $escala = Escala::find($id);
 
         if (!$escala) {
-            return response()->json(['message' => 'escala no encontrada'], 404);
+            return response()->json(['message' => 'Escala no encontrada'], 404);
         }
 
+        // Actualizar la escala
         $escala->update($request->all());
-
-        return response()->json(['message' => 'escala actualizada correctamente', 'data' => $escala], 200);
+        return response()->json(['message' => 'Escala actualizada correctamente', 'data' => $escala], 200);
     }
 
     /**
@@ -95,11 +90,10 @@ class EscalaController extends Controller
         $escala = Escala::find($id);
 
         if (!$escala) {
-            return response()->json(['message' => 'escala no encontrada'], 404);
+            return response()->json(['message' => 'Escala no encontrada'], 404);
         }
 
         $escala->delete();
-
-        return response()->json(['message' => 'escala eliminada correctamente'], 204);
+        return response()->json(['message' => 'Escala eliminada correctamente'], 204);
     }
 }

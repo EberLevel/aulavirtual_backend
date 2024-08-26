@@ -15,6 +15,6 @@ class Escala extends Model
         'nombre',
         'c',
         'color',
-
+        'domain_id'
     ];
 }

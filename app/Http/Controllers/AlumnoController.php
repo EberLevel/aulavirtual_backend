@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Promocion;
 use App\Models\Alumno;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,45 +29,34 @@ class AlumnoController extends Controller
     }
     public function store(Request $request)
     {
-        //inicia transaccion
         DB::beginTransaction();
         try {
-
             $this->validate($request, [
                 'codigo' => 'required|string|max:255',
                 'nombres' => 'required|string|max:255',
+                'apellidos' => 'required|string|max:255',
                 'cicloId' => 'required|integer',
                 'carreraId' => 'required|integer',
                 'tipoDocumento' => 'required|integer|max:255',
-
             ]);
-            $isValidEmail = $this->checkIsValidEmail($request->input('email'));
-            if (!$isValidEmail) {
-                return response()->json(['message' => 'Email en uso'], 400);
-            }
-            $directories = [
-                'public/carnet',
-                'public/fotos'
-            ];
 
-            foreach ($directories as $directory) {
-                if (!Storage::exists($directory)) {
-                    Storage::makeDirectory($directory);
-                }
-            }
-            if ($request->hasFile('fotoCarnet')) {
-                $file = $request->file('fotoCarnet');
-                $path = $file->store('public/carnet');  // Almacena el archivo en el directorio 'public/carnet'
-                $path = str_replace('public/', '', $path);  // Limpia el prefijo 'public/'
-                $request->merge(['fotoCarnet' => $path]);
+            // Obtener la promoción dependiendo de la fecha actual
+            $fechaActual = Carbon::now();
+            $promocion = null;
+
+            if ($fechaActual->month <= 6) {
+                // Primer semestre del año, asignar la promoción "2024-I"
+                $promocion = Promocion::where('nombre_promocion', '2024-I')->first();
+            } else {
+                // Segundo semestre del año, asignar la promoción "2024-II"
+                $promocion = Promocion::where('nombre_promocion', '2024-II')->first();
             }
 
-            if ($request->hasFile('fotoPerfil')) {
-                $file = $request->file('fotoPerfil');
-                $path = $file->store('public/fotos');  // Almacena el archivo en el directorio 'public/fotos'
-                $path = str_replace('public/', '', $path);  // Limpia el prefijo 'public/'
-                $request->merge(['fotoPerfil' => $path]);
+            if (!$promocion) {
+                // Si no existe la promoción, podrías crearla o devolver un error
+                return response()->json(['message' => 'Promoción no encontrada'], 400);
             }
+
             $alumno = [
                 "codigo" => $request->input('codigo'),
                 "nombres" => $request->input('nombres'),
@@ -78,74 +67,28 @@ class AlumnoController extends Controller
                 "ciclo_id" => $request->input('cicloId'),
                 "dni" => $request->input('numeroDocumento'),
                 "genero" => "masculino",
-                "foto_carnet" => $request->input('fotoCarnet') ?? '',
-                "foto_perfil" => $request->input('fotoPerfil') ?? '',
-                'fecha_nacimiento' => $request->input('fechaNacimiento') ?? date('Y-m-d'),
-                'direccion' => $request->input('direccion'),
-                'domain_id' => $request->input('domain_id'),
-
+                "fecha_nacimiento" => $request->input('fechaNacimiento') ?? date('Y-m-d'),
+                "direccion" => $request->input('direccion'),
+                "domain_id" => $request->input('domain_id'),
+                "promocion_id" => $promocion->id  ,
+                "foto_perfil" => $request->input('fotoPerfil') ?? 'default_profile_picture.jpg',
+                "foto_carnet" => $request->input('fotoCarnet') ?? 'default_carnet_picture.jpg' 
             ];
-            //get rol with name Alumno
-            $rol = DB::table('rol')->where('nombre', 'Alumno')->first();
-            if ($request->input('id')) {
-                $alumno = DB::table('alumnos')->where('id', $request->input('id'))->first();
-                if ($alumno) {
-                    $alumno = DB::table('alumnos')->where('id', $request->input('id'))->update(
-                        [
-                            "codigo" => $request->input('codigo'),
-                            "nombres" => $request->input('nombres'),
-                            "apellidos" => $request->input('apellidos'),
-                            "celular" => $request->input('nroCelular'),
-                            "email" => $request->input('email'),
-                            "carrera_id" => $request->input('carreraId'),
-                            "ciclo_id" => $request->input('cicloId'),
-                            "dni" => $request->input('numeroDocumento'),
-                            "genero" => "masculino",
-                            "foto_carnet" => $request->input('fotoCarnet') ?? '',
-                            "foto_perfil" => $request->input('fotoPerfil') ?? '',
-                            'fecha_nacimiento' => $request->input('fechaNacimiento'),
-                            'direccion' => $request->input('direccion'),
-                            'domain_id' => $request->input('domain_id'),
-                        ]
-                    );
-                    $dataUser = [
-                        'name' => $request->input('nombres'),
-                        'email' => $request->input('email'),
-                        'password' => Hash::make($request->input('contraseña')),
-                        'domain_id' => $request->input('domain_id'),
-                        'dni' => $request->input('numeroDocumento'),
-                    ];
-                    $user = DB::table('users')->where('email', $request->input('email'))->update($dataUser);
-                    DB::commit();
-                    return response()->json("Record updated", 201);
-                }
-                return response()->json('Record not found', 404);
-            } else {
-                $alumno = DB::table('alumnos')->insertGetId($alumno);
-                $dataUser = [
-                    'name' => $request->input('nombres'),
-                    'email' => $request->input('email'),
-                    'password' => Hash::make($request->input('email')),
-                    'domain_id' => $request->input('domain_id'),
-                    'dni' => $request->input('numeroDocumento'),
-                    'rol_id' => $rol->id,
-                    'alumno_id' => $alumno,
 
-                ];
-                $user = DB::table('users')->insert($dataUser);
+            // Guardar el alumno
+            $alumnoId = DB::table('alumnos')->insertGetId($alumno);
 
-                DB::commit();
-            }
-            return response()->json($alumno, 201);
+            DB::commit();
+
+            return response()->json(['alumno_id' => $alumnoId, 'message' => 'Alumno creado correctamente'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json($e->getMessage(), 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
     public function update(Request $request)
     {
-        //recibe formData
-
         $this->validate($request, [
             'codigo' => 'required|string|max:255',
             'nombres' => 'required|string|max:255',

@@ -7,12 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class NivelCargo extends Model
 {
-    use HasFactory;
-    protected $table = 'nivel_cargo';
+    protected $table = 'nivel_puesto'; 
 
-    protected $fillable = [
-
-        'nombre',
-
-    ];
+    protected $fillable = ['nombre', 'domain_id'];
 }

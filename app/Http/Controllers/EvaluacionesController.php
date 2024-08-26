@@ -27,7 +27,59 @@ class EvaluacionesController extends Controller
     
         return response()->json($evaluaciones);
     }
+    public function getEvaluacionById($id)
+    {
+        // Buscar la evaluación por su ID
+        $evaluacion = Evaluaciones::select(
+            'id',
+            'nombre',
+            'tipo_evaluacion_id',
+            'porcentaje_evaluacion',
+            'fecha_y_hora_programo',
+            'observaciones',
+            'estado_id',
+            'domain_id',
+            'grupo_de_evaluaciones_id'
+        )
+        ->where('id', $id)
+        ->first();
+    
+        // Verificar si se encontró la evaluación
+        if (!$evaluacion) {
+            return response()->json(['message' => 'Evaluación no encontrada'], 404);
+        }
+    
+        // Devolver los datos de la evaluación
+        return response()->json($evaluacion);
+    }
+    public function updateEvaluacionById(Request $request, $id)
+{
+    // Validar los datos recibidos
+    $validatedData = $this->validate($request, [
+        'nombre' => 'required|string|max:255',
+        'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro',
+        'porcentaje_evaluacion' => 'required|numeric',
+        'fecha_y_hora_programo' => 'required|date',
+        'observaciones' => 'nullable|string',
+        'estado_id' => 'required',
+        'domain_id' => 'required|integer',
+        'grupo_de_evaluaciones_id' => 'required|integer',
+    ]);
 
+    // Buscar la evaluación por su ID
+    $evaluacion = Evaluaciones::find($id);
+
+    // Verificar si la evaluación existe
+    if (!$evaluacion) {
+        return response()->json(['message' => 'Evaluación no encontrada'], 404);
+    }
+
+    // Actualizar la evaluación con los datos validados
+    $evaluacion->update($validatedData);
+
+    // Devolver la evaluación actualizada
+    return response()->json($evaluacion);
+}
 
     /**
      * Store a newly created resource in storage.
@@ -80,6 +132,8 @@ class EvaluacionesController extends Controller
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required',
+            'domain_id' => 'required|integer',
+            'grupo_de_evaluaciones_id' => 'required|integer',
         ]);
 
         $Evaluaciones->update($validatedData);
