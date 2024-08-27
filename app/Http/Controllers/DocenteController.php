@@ -79,62 +79,96 @@ class DocenteController extends Controller
         return response()->json($imagePath);
     }
 
-    public function show($id)
+    public function show($domain_id, $id)
     {
-        $docente = Docente::find($id);
-        if(!$docente){
+        // Asegúrate de filtrar también por el domain_id
+        $docente = Docente::select('id', 'codigo', 'nombres', 'celular', 'profesion', 'tipo_documento', 'doc_identidad', 'fecha_nacimiento', 'genero', 'foto', 'roles', 'email')
+                           ->where('id', $id)
+                           ->where('domain_id', $domain_id) // Filtro por dominio
+                           ->first();
+    
+        if (!$docente) {
             return response()->json(['Error' => 'Docente no encontrado'], 404);
         }
-
+    
         return response()->json(['Exito' => true, 'Datos' => $docente], 200);
     }
+    
 
     public function store(Request $request)
     {
         DB::beginTransaction();
-        try{
-        $validator = Validator::make($request->all(), [
-            'codigo' => 'required|string|max:20',
-            'nombres' => 'required|string|max:20',
-            'constraseña' => 'required|string|max:30',
-            'celular' => 'required|string|max:20',
-            'profesion' => 'required|string|max:30',
-            'tipo_documento' => 'required|string|max:20',
-            'doc_identidad' => 'required|string|max:20',
-            'fecha_nacimiento' => 'required|date|before:today',
-            'genero' => 'required|string|max:100',
-            // 'foto' => 'required|string|max:100'
-        ]);
-            $isValidEmail=$this->checkIsValidEmail($request->email);
-            if(!$isValidEmail){
+        try {
+            // Validar los campos de entrada
+            $validator = Validator::make($request->all(), [
+                'codigo' => 'required|string|max:20',
+                'nombres' => 'required|string|max:200',
+                'contraseña' => 'required|string|max:30',
+                'celular' => 'required|string|max:20',
+                'profesion' => 'required|string|max:200',
+                'tipo_documento' => 'required|string|max:20',
+                'doc_identidad' => 'required|string|max:20',
+                'fecha_nacimiento' => 'required|date|before:today',
+                'genero' => 'required|string|max:100',
+                'foto' => 'nullable|string', // La foto es opcional y debe ser una cadena base64
+                'roles' => 'required|string|max:100',
+                'email' => 'required|email',
+                'domain_id' => 'required|integer',
+            ]);
+    
+            if ($validator->fails()) {
+                return response()->json(['Error' => $validator->errors()], 422);
+            }
+    
+            // Procesar la imagen base64
+            $imagePath = null;
+            if ($request->has('foto')) {
+                $imageBase64 = $request->input('foto');
+    
+                // Verifica si la imagen está en formato base64
+                if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
+                    $imageType = $matches[1]; // Obtener el tipo de imagen (jpeg, png, etc.)
+                    $imageBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $imageBase64);
+                    $image = base64_decode($imageBase64);
+                    
+                    // Genera un nombre único para la imagen
+                    $imageName = uniqid() . '.' . $imageType;
+    
+                    // Guardar la imagen en el sistema de archivos
+                    $imagePath = 'docentes/' . $imageName;
+                    Storage::disk('public')->put($imagePath, $image);
+                } else {
+                    return response()->json(['Error' => true, 'Mensaje' => 'Formato de imagen inválido'], 400);
+                }
+            }
+    
+            // Verificar si el correo es válido
+            $isValidEmail = $this->checkIsValidEmail($request->email);
+            if (!$isValidEmail) {
                 DB::rollBack();
                 return response()->json(['message' => 'Email inválido'], 400);
             }
-            
-            $isValidImage = $this->checkIsValidImage($request->foto);
-            if (!$isValidImage) {
-                return response()->json(['Error' => true, 'Mensaje' => 'Imagen inválida']);
-            }
-            $imagePath = $this->uploadFile($request->foto, 'docentes');
-            $docenteRol=DB::table('rol')->where('nombre', 'Docente')->first();
+    
+            // Guardar el registro del docente en la base de datos
+            $docenteRol = DB::table('rol')->where('nombre', 'Docente')->first();
             $docente = [
                 "codigo" => $request->codigo,
-                "nombres"=> $request->nombres,
-                // "usuario"=> $request->usuario,
-                // "clave"=> $request->clave,
-                "celular"=> $request->celular,
-                "profesion"=> $request->profesion,
-                // "vinculo_laboral"=> $request->vinculo_laboral,
-                "tipo_documento"=> $request->tipo_documento,
-                "doc_identidad"=> $request->doc_identidad,
-                "fecha_nacimiento"=> $request->fecha_nacimiento,
-                "genero"=> $request->genero,
-                "foto"=> $imagePath,
-                "roles"=> $request->roles,
+                "nombres" => $request->nombres,
+                "celular" => $request->celular,
+                "profesion" => $request->profesion,
+                "tipo_documento" => $request->tipo_documento,
+                "doc_identidad" => $request->doc_identidad,
+                "fecha_nacimiento" => $request->fecha_nacimiento,
+                "genero" => $request->genero,
+                "foto" => $imagePath,
+                "roles" => $request->roles,
                 'domain_id' => $request->domain_id,
                 'email' => $request->email,
-            ];  
-            $docenteId=DB::table('docentes')->insertGetId($docente);
+            ];
+    
+            $docenteId = DB::table('docentes')->insertGetId($docente);
+    
+            // Guardar también los datos del usuario
             $userData = [
                 'name' => $request->nombres,
                 'email' => $request->email,
@@ -144,93 +178,130 @@ class DocenteController extends Controller
                 'docente_id' => $docenteId
             ];
             DB::table('users')->insert($userData);
+    
             DB::commit();
             return response()->json(['Exito' => true, 'Mensaje' => 'Registro exitoso'], 201);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['Error' => true, 'Mensaje' => $e->getMessage()], 500);
-        }    
+        }
     }
 
-    public function update(Request $request, $id){
-        $docente = Docente::find($id);
-        if(!$docente){
-            return response()->json(['Error' => 'Docente no encontrado'], 404);
+    public function update(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            // Verificar si el docente existe
+            $docente = Docente::find($id);
+            if (!$docente) {
+                return response()->json(['Error' => 'Docente no encontrado'], 404);
+            }
+    
+            // Validar los campos de entrada
+            $validator = Validator::make($request->all(), [
+                'codigo' => 'required|string|max:20',
+                'nombres' => 'required|string|max:200',
+                'clave' => 'nullable|string|max:30',
+                'celular' => 'required|string|max:20',
+                'profesion' => 'required|string|max:30',
+                'tipo_documento' => 'required|string|max:20',
+                'doc_identidad' => 'required|string|max:20|unique:docentes,doc_identidad,' . $id,
+                'fecha_nacimiento' => 'required|date|before:today',
+                'genero' => 'required|string|max:100',
+                'roles' => 'required|string|max:100',
+                'email' => 'required|email',
+            ]);
+    
+            if ($validator->fails()) {
+                return response()->json(['Error' => $validator->errors()], 422);
+            }
+    
+            // Procesar la imagen base64
+            $imagePath = $docente->foto; // Mantén la imagen actual si no se envía una nueva
+            if ($request->has('foto')) {
+                $base64Image = $request->input('foto');
+    
+                // Verifica si la imagen está en formato base64
+                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
+                    $imageType = $matches[1]; // Obtener el tipo de imagen (jpeg, png, etc.)
+                    $base64Image = preg_replace('/^data:image\/\w+;base64,/', '', $base64Image);
+                    $image = base64_decode($base64Image);
+    
+                    // Genera un nombre único para la imagen
+                    $imageName = uniqid() . '.' . $imageType;
+    
+                    // Guardar la imagen en el sistema de archivos
+                    $imagePath = 'docentes/' . $imageName;
+                    Storage::disk('public')->put($imagePath, $image);
+                } else {
+                    return response()->json(['Error' => true, 'Mensaje' => 'Formato de imagen inválido'], 400);
+                }
+            }
+    
+            // Actualizar los datos del docente
+            $docente->update([
+                "codigo" => $request->codigo,
+                "nombres" => $request->nombres,
+                "celular" => $request->celular,
+                "profesion" => $request->profesion,
+                "tipo_documento" => $request->tipo_documento,
+                "doc_identidad" => $request->doc_identidad,
+                "fecha_nacimiento" => $request->fecha_nacimiento,
+                "genero" => $request->genero,
+                "foto" => $imagePath,
+                "roles" => $request->roles,
+                'email' => $request->email,
+            ]);
+    
+            // Actualizar los datos correspondientes en la tabla users
+            $userData = [
+                'name' => $request->nombres,
+                'email' => $request->email,
+                'domain_id' => $request->domain_id, // Usa el domain_id si es relevante en la actualización
+                'docente_id' => $id,
+            ];
+    
+            // Solo actualizar la contraseña si se envía una nueva
+            if ($request->filled('clave')) {
+                $userData['password'] = Hash::make($request->clave);
+            }
+    
+            // Actualiza la tabla users donde el docente_id coincide
+            DB::table('users')->where('docente_id', $id)->update($userData);
+    
+            DB::commit();
+            return response()->json(['Exito' => true, 'Mensaje' => 'Docente y usuario actualizados correctamente'], 200);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['Error' => true, 'Mensaje' => $e->getMessage()], 500);
         }
-        
-        $validator = Validator::make($request->all(), [
-            'codigo' => 'required|string|max:20',
-            'nombres' => 'required|string|max:20',
-            'usuario' => 'required|string|max:20|unique:docentes,usuario,'.$id,
-            'clave' => 'required|string|max:30',
-            'celular' => 'required|string|max:20',
-            'profesion' => 'required|string|max:30',
-            'vinculo_laboral' => 'required|string|max:20',
-            'tipo_documento' => 'required|string|max:20',
-            'doc_identidad' => 'required|string|max:20|unique:docentes,doc_identidad,' .$id,
-            'fecha_nacimiento' => 'required|date|before:today',
-            'edad' => 'required|integer|min:18',
-            'genero' => 'required|string|max:100',
-            // 'foto' => 'nullable|string|max:100'
-            'roles' => 'required|string|max:100',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['Error' => $validator->errors()], 422);
-        }
-
-        $base64Image = $request->input('foto');
-        if (!preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
-            return response()->json(['Error' => true, 'Mensaje' => 'Imagen inválida']);
-        }
-
-        $imageType = $matches[1];
-        $base64Image = preg_replace('/^data:image\/\w+;base64,/', '', $base64Image);
-        $image = base64_decode($base64Image);
-        
-        // Generar un nombre único para el archivo
-        $imageName = uniqid() . '.' . $imageType;
-
-        // Definir la ruta donde se guardará la imagen
-        $imagePath = storage_path('app\\public\\docentes\\' . $imageName);
-
-        // Crear el directorio si no existe
-        if (!file_exists(dirname($imagePath))) {
-            mkdir(dirname($imagePath), 0777, true);
-        }
-
-        // Guardar la imagen en el disco
-        file_put_contents($imagePath, $image);
-
-
-        $docente->update([
-            "codigo" => $request->codigo,
-            "nombres"=> $request->nombres,
-            "usuario"=> $request->usuario,
-            "clave"=> $request->clave,
-            "celular"=> $request->celular,
-            "profesion"=> $request->profesion,
-            "vinculo_laboral"=> $request->vinculo_laboral,
-            "tipo_documento"=> $request->tipo_documento,
-            "doc_identidad"=> $request->doc_identidad,
-            "fecha_nacimiento"=> $request->fecha_nacimiento,
-            "edad"=> $request->edad,
-            "genero"=> $request->genero,
-            "foto"=> $imagePath,
-            "roles" => $request->roles
-        ]);
-
-        return response()->json(['Exito' => true, 'Mensaje' => 'Docente actualizado correctamente'], 200);
     }
+    
 
-    public function destroy($id){
-        $docente = Docente::find($id);
-        if(!$docente){
-            return response()->json(['Error' => 'Docente no encontrado'], 404);
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            // Elimina primero los registros relacionados en la tabla `users`
+            DB::table('users')->where('docente_id', $id)->delete();
+    
+            // Luego elimina el docente
+            $docente = Docente::find($id);
+            if(!$docente) {
+                DB::rollBack();
+                return response()->json(['Error' => 'Docente no encontrado'], 404);
+            }
+            $docente->delete();
+    
+            DB::commit();
+            return response()->json(['Mensaje' => 'Docente eliminado'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['Error' => $e->getMessage()], 500);
         }
-        $docente->delete();
-        return response()->json(['Mensaje' => 'Docente Eliminado'], 200);
     }
+    
     public function dropDown($domain_id){
         $docentes = Docente::select('id', 'nombres')->where('domain_id', $domain_id)->get();
         return response()->json($docentes);

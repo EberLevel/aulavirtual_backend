@@ -15,7 +15,6 @@ class Docente extends Model
         'clave',
         'celular',
         'profesion',
-        'vinculo_laboral',
         'tipo_documento',
         'doc_identidad',
         'fecha_nacimiento',

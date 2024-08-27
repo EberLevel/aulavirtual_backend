@@ -58,8 +58,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //get ciclos dropdown
     $router->get('ciclos-dropdown', 'ParametroController@dropdown');
     $router->get('ciclos-dropdown/{domain_id}', 'CicloController@dropDown');
-    //docentes dropdown
-    $router->get('docentes-dropdown/{domain_id}', 'DocenteController@dropdown');
+
 
     // DOCUMENTO GESTION RALVA
     $router->get('documento-gestion/{domain_id}', 'DocumentoGestionController@index');
@@ -70,13 +69,15 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('documento-gestion-codigo', 'DocumentoGestionController@generateCode');
     $router->get('alumnos/{domain_id}/{user_id}/documentos', 'DocumentoGestionController@getAlumnoDocuments');
 
+    //Docente 
+    $router->get('docentes-dropdown/{domain_id}', 'DocenteController@dropdown');
     $router->get('docentes/logged/{docente_id}/{dominio}', 'DocenteController@getLoggedDocente');
     $router->get('docentes/imagen', 'DocenteController@imagen');
     $router->get('docentes/listar/{domain_id}', 'DocenteController@index');
     $router->get('docentes/listar/{domain_id}/{id}', 'DocenteController@show');
     $router->post('docentes/registrar', 'DocenteController@store');
     $router->put('docentes/actualizar/{id}', 'DocenteController@update');
-    $router->get('docentes/eliminar/{id}', 'DocenteController@destroy');
+    $router->delete('docentes/eliminar/{id}', 'DocenteController@destroy');
 
 
     $router->get('cursos', 'CursoController@index');
@@ -128,6 +129,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('alumnos/{id}/{dominio}', 'AlumnoController@show');
     $router->get('alumnos/{dominio}', 'AlumnoController@index');
     $router->post('alumnos', 'AlumnoController@store');
+    $router->put('alumnos/{id}/{domain_id}', 'AlumnoController@update');
     $router->delete('alumnos/{id}/{dominio}', 'AlumnoController@destroy');
 
 
@@ -206,14 +208,14 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('ano/{id}', 'AnoController@show');
     $router->put('ano/{id}', 'AnoController@update');
     $router->delete('ano/{id}', 'AnoController@destroy');
-    
+
     //Ocupacion
-    $router->get('ocupaciones-actuales/{domain_id}', 'OcupacionActualController@index');  
-    $router->post('ocupacion-actual', 'OcupacionActualController@store');  
-    $router->get('ocupacion-actual/{id}', 'OcupacionActualController@show');  
-    $router->put('ocupacion-actual/{id}', 'OcupacionActualController@update');  
+    $router->get('ocupaciones-actuales/{domain_id}', 'OcupacionActualController@index');
+    $router->post('ocupacion-actual', 'OcupacionActualController@store');
+    $router->get('ocupacion-actual/{id}', 'OcupacionActualController@show');
+    $router->put('ocupacion-actual/{id}', 'OcupacionActualController@update');
     $router->delete('ocupacion-actual/{id}', 'OcupacionActualController@destroy');
-    
+
     //preguntas routes
     $router->get('preguntas/{domain_id}/{evaluacion_id}', 'PreguntaController@index');
     $router->post('preguntas', 'PreguntaController@store');
@@ -299,5 +301,4 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
         $router->put('action/{domain_id}/{id}', 'AccionController@update');
         $router->delete('action/{domain_id}/{id}', 'AccionController@destroy');
     });
-    
 });
