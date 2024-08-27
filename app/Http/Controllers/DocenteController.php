@@ -201,7 +201,7 @@ class DocenteController extends Controller
             $validator = Validator::make($request->all(), [
                 'codigo' => 'required|string|max:20',
                 'nombres' => 'required|string|max:200',
-                'clave' => 'nullable|string|max:30',
+                'clave' => 'nullable|string|max:30', // Clave es opcional
                 'celular' => 'required|string|max:20',
                 'profesion' => 'required|string|max:30',
                 'tipo_documento' => 'required|string|max:20',
@@ -216,7 +216,7 @@ class DocenteController extends Controller
                 return response()->json(['Error' => $validator->errors()], 422);
             }
     
-            // Procesar la imagen base64
+            // Procesar la imagen base64 si se envía
             $imagePath = $docente->foto; // Mantén la imagen actual si no se envía una nueva
             if ($request->has('foto')) {
                 $base64Image = $request->input('foto');
@@ -248,7 +248,7 @@ class DocenteController extends Controller
                 "doc_identidad" => $request->doc_identidad,
                 "fecha_nacimiento" => $request->fecha_nacimiento,
                 "genero" => $request->genero,
-                "foto" => $imagePath,
+                "foto" => $imagePath, // Si no se envía foto, se mantendrá la existente
                 "roles" => $request->roles,
                 'email' => $request->email,
             ]);
@@ -277,6 +277,7 @@ class DocenteController extends Controller
             return response()->json(['Error' => true, 'Mensaje' => $e->getMessage()], 500);
         }
     }
+    
     
 
     public function destroy($id)
