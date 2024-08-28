@@ -71,6 +71,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
     //Docente 
     $router->get('docentes-dropdown/{domain_id}', 'DocenteController@dropdown');
+    
     $router->get('docentes/logged/{docente_id}/{dominio}', 'DocenteController@getLoggedDocente');
     $router->get('docentes/imagen', 'DocenteController@imagen');
     $router->get('docentes/listar/{domain_id}', 'DocenteController@index');
