@@ -209,9 +209,8 @@ class DocenteController extends Controller
                 return response()->json(['Error' => $validator->errors()], 422);
             }
     
+            // Procesar la imagen si se envía una nueva
             $imageBase64 = $request->input('foto');
-            $imagePath = null;
-    
             if ($imageBase64) {
                 // Verifica si la imagen está en formato base64
                 if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
@@ -219,9 +218,8 @@ class DocenteController extends Controller
                     $imageBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $imageBase64);
                     $image = base64_decode($imageBase64);
     
-                    // Puedes optar por almacenar la imagen directamente en Base64 o convertir a formato adecuado
                     // Guarda la cadena base64 en la base de datos
-                    $imagePath = $imageBase64;
+                    $docente->foto = $imageBase64;
                 }
             }
     
@@ -235,9 +233,9 @@ class DocenteController extends Controller
                 "doc_identidad" => $request->doc_identidad,
                 "fecha_nacimiento" => $request->fecha_nacimiento,
                 "genero" => $request->genero,
-                "foto" => $imagePath, // Si no se envía foto, se mantendrá la existente
                 "roles" => $request->roles,
                 'email' => $request->email,
+                // No actualizar "foto" si no se envía una nueva imagen
             ]);
     
             // Actualizar los datos correspondientes en la tabla users
@@ -264,6 +262,7 @@ class DocenteController extends Controller
             return response()->json(['Error' => true, 'Mensaje' => $e->getMessage()], 500);
         }
     }
+    
     
     public function destroy($id)
     {

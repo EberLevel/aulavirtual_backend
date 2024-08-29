@@ -77,13 +77,12 @@ class AlumnoController extends Controller
                 "carrera_id" => $request->input('carreraId'),
                 "ciclo_id" => $request->input('cicloId'),
                 "dni" => $request->input('numeroDocumento'),
-                "genero" => "masculino",
                 "fecha_nacimiento" => $request->input('fechaNacimiento') ?? date('Y-m-d'),
                 "direccion" => $request->input('direccion'),
                 "domain_id" => $request->input('domain_id'),
                 "promocion_id" => $promocion->id,
-                "foto_perfil" => $fotoPerfil, // Guardar como base64
-                "foto_carnet" => $fotoCarnet // Guardar como base64
+                "foto_perfil" => $fotoPerfil,
+                "foto_carnet" => $fotoCarnet
             ];
 
             $alumnoId = DB::table('alumnos')->insertGetId($alumno);
@@ -112,19 +111,21 @@ class AlumnoController extends Controller
             'fechaNacimiento' => 'required|date',
             'domain_id' => 'required|integer',
         ]);
-
+    
         $alumno = Alumno::where('id', $id)
                         ->where('domain_id', $domain_id)
                         ->first();
-
+    
         if ($alumno) {
             // Procesar las imágenes si están presentes
             $fotoPerfil = $request->input('fotoPerfil') ? $request->input('fotoPerfil') : $alumno->foto_perfil;
             $fotoCarnet = $request->input('fotoCarnet') ? $request->input('fotoCarnet') : $alumno->foto_carnet;
-
+    
+            // Actualizar los datos del alumno
             $alumno->update([
                 "codigo" => $request->input('codigo'),
                 "nombres" => $request->input('nombres'),
+                "apellidos" => $request->input('apellidos'),
                 "celular" => $request->input('nroCelular'),
                 "email" => $request->input('email'),
                 "carrera_id" => $request->input('carreraId'),
@@ -136,12 +137,26 @@ class AlumnoController extends Controller
                 "foto_perfil" => $fotoPerfil,
                 "foto_carnet" => $fotoCarnet,
             ]);
-
+    
+            // Actualizar el usuario correspondiente en la tabla users
+            $user = DB::table('users')->where('alumno_id', $id)->first();
+    
+            if ($user) {
+                DB::table('users')->where('id', $user->id)->update([
+                    'name' => $request->input('nombres'),
+                    'lastname' => $request->input('apellidos'),
+                    'email' => $request->input('email'),
+                    'dni' => $request->input('dni'),
+                    'password' => Hash::make($request->input('contraseña')),  // Hashear la contraseña
+                ]);
+            }
+    
             return response()->json($alumno, 200);
         }
-
+    
         return response()->json(['message' => 'Alumno no encontrado'], 404);
     }
+    
 
     // Eliminar un alumno
     public function destroy($id, $dominio)
