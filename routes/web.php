@@ -71,7 +71,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
     //Docente 
     $router->get('docentes-dropdown/{domain_id}', 'DocenteController@dropdown');
-
+    
     $router->get('docentes/logged/{docente_id}/{dominio}', 'DocenteController@getLoggedDocente');
     $router->get('docentes/imagen', 'DocenteController@imagen');
     $router->get('docentes/listar/{domain_id}', 'DocenteController@index');
@@ -80,6 +80,15 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('docentes/actualizar/{id}', 'DocenteController@update');
     $router->delete('docentes/eliminar/{id}', 'DocenteController@destroy');
 
+    $router->get('cvbanksByDominio/{domain_id}', 'CvBankController@index');  
+    $router->get('cvbanks/filters-data', 'CvBankController@filtersData'); 
+    $router->get('cvbanks/create-data/{domain_id}', 'CvBankController@dataCreate');
+    $router->post('cvbanks', 'CvBankController@store'); 
+    $router->get('cvbanks/{id}', 'CvBankController@show');  
+    $router->get('cvbanks/user/{id}', 'CvBankController@showByUser');  
+    $router->put('cvbanks/{id}', 'CvBankController@update');  
+    $router->delete('cvbanks/{id}', 'CvBankController@destroy');  
+    
 
     $router->get('cursos', 'CursoController@index');
     $router->post('cursos', 'CursoController@store');
@@ -132,16 +141,6 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('alumnos', 'AlumnoController@store');
     $router->put('alumnos/{id}/{domain_id}', 'AlumnoController@update');
     $router->delete('alumnos/{id}/{dominio}', 'AlumnoController@destroy');
-
-    //CvBankController 
-    $router->get('cvbanks/{cvbank_id}/{dominio}', 'CvBankController@show');
-    $router->get('cvbanks/{dominio}', 'CvBankController@index');
-    $router->get('cvbanks/filters-data/{dominio}', 'CvBankController@filtersData');
-    $router->get('cvbanks/data-create/{dominio}', 'CvBankController@dataCreate');
-    $router->post('cvbanks', 'CvBankController@store');
-    $router->put('cvbanks/{cvbank_id}/{domain_id}', 'CvBankController@update');
-    $router->delete('cvbanks/{cvbank_id}/{dominio}', 'CvBankController@destroy');
-    $router->get('cvbanks/user/{user_id}/{dominio}', 'CvBankController@showByUser');
 
 
 

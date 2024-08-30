@@ -63,7 +63,7 @@ public function status(){
 }
 
 public function domain() {
-    return $this->belongsTo(Domain::class, 'domain_id');
+    return $this->belongsTo(Domains::class, 'domain_id');
 }
 }
 

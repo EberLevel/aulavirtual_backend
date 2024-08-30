@@ -14,6 +14,6 @@ class TGParametro extends Model
     
     public function domain()
     {
-        return $this->belongsTo(Domain::class);
+        return $this->belongsTo(Domains::class);
     }
 }
