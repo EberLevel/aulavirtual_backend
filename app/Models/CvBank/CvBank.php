@@ -2,6 +2,7 @@
 
 namespace App\Models\CvBank;
 
+use Illuminate\Database\Eloquent\Model;
 use App\Models\AcademicFormation;
 use App\Models\Capacitation;
 use App\Models\DocIdentidad;
@@ -12,12 +13,13 @@ use App\Models\Maintenance\Profession;
 use App\Models\Profesion;
 use App\Models\Reference;
 use App\Models\WorkExperience;
+use App\Models\Domains;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class CvBank extends Model
 {
     use HasFactory;
+
     protected $table = 'cv_banks';
 
     protected $fillable = [
@@ -41,17 +43,12 @@ class CvBank extends Model
         'date_affiliation',
         'estado_actual_id',
         'training_type_id',
-        'domain_id'
+        'ocupacion_actual_id',
+        'domain_id',
+        'imagen'
     ];
 
-    // nueva propiedad con la url de la imagen
-
-    protected $appends = ['image_url'];
-
-    public function getImageUrlAttribute()
-    {
-        return $this->image ? url("storage/$this->image") : null;
-    }
+    // Relaciones con otras tablas
 
     public function references()
     {
@@ -98,12 +95,12 @@ class CvBank extends Model
         return $this->belongsTo(DocIdentidad::class, 'identification_document_id');
     }
 
-
-    public function domain() {
-        return $this->belongsTo(Domain::class, 'domain_id');
+    public function domain()
+    {
+        return $this->belongsTo(Domains::class, 'domain_id');
     }
 
-
+    // Scopes para filtrar los resultados
 
     public function scopeByTerm($query, $term)
     {

@@ -3,32 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\CvBank\CvBank;
-use Dotenv\Exception\ValidationException;
-use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Controllers\bcrypt;
 
 class CvBankController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, $domain_id)
     {
-        $domainId = $request->user()->domain_id;
-        $cvBanks = CvBank::with('marital_status','profession','estadoActual','education_degree','identification_document')
-                          ->byTerm($request->term)
-                          ->byProfessionId($request->profession_id)
-                          ->byEducationDegreeId($request->education_degree_id)
-                          ->byCurrentStateId($request->current_state_id)
-                          ->paginate(10);
+        $cvBanks = CvBank::with('marital_status', 'profession', 'estadoActual', 'education_degree', 'identification_document')
+            ->where('domain_id', $domain_id) // Filtrar por domain_id
+            ->byTerm($request->term)
+            ->byProfessionId($request->profession_id)
+            ->byEducationDegreeId($request->education_degree_id)
+            ->byCurrentStateId($request->current_state_id)
+            ->paginate(10);
 
         return response()->json($cvBanks, 200);
     }
 
 
-    public function filtersData(){
+
+    public function filtersData()
+    {
         $data = [
             'education_degrees' => \App\Models\GradoInstruccion::all(),
             'professions' => \App\Models\Profesion::all(),
@@ -38,100 +38,117 @@ class CvBankController extends Controller
         return response()->json($data, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function dataCreate($domain_id)
     {
-        //
-    }
-
-    public function dataCreate()
-    {
+        $code = $this->generateCodigoConcursante($domain_id);
         $data = [
-            'identification_documents' => \App\Models\DocIdentidad::all(),
-            'marital_statuses' => \App\Models\EstadoCivil::all(),
-            'education_degrees' => \App\Models\GradoInstruccion::all(),
-            'professions' => \App\Models\Profesion::all(),
-            'current_states' => \App\Models\EstadoActual::all(),
-            'position_levels' => \App\Models\NivelCargo::all(),
-            'scales' => \App\Models\Escala::all(),
-            'actions' => \App\Models\AccionOi::all(),
-            'training_types' => \App\Models\TipoCapacitacion::all()
+            'code' => $code,
+            'identification_documents' => \App\Models\DocIdentidad::where('domain_id', $domain_id)->get(),
+            'marital_statuses' => \App\Models\EstadoCivil::where('domain_id', $domain_id)->get(),
+            'education_degrees' => \App\Models\GradoInstruccion::where('domain_id', $domain_id)->get(),
+            'professions' => \App\Models\Profesion::where('domain_id', $domain_id)->get(),
+            'current_states' => \App\Models\EstadoActual::where('domain_id', $domain_id)->get(),
+            'position_levels' => \App\Models\NivelCargo::where('domain_id', $domain_id)->get(),
+            'scales' => \App\Models\Escala::where('domain_id', $domain_id)->get(),
+            'actions' => \App\Models\AccionOi::where('domain_id', $domain_id)->get(),
+            'training_types' => \App\Models\TipoCapacitacion::where('domain_id', $domain_id)->get(),
+            'ocupacion_actual' => \App\Models\OcupacionActual::where('domain_id', $domain_id)->get(), // Nueva línea para ocupacion_actual
         ];
 
         return response()->json($data, 200);
     }
+
+    private function generateCodigoConcursante($domain_id)
+    {
+        $count = \App\Models\CvBank\CvBank::where('domain_id', $domain_id)->count();
+        return 'CNC-' . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
+    }
+
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-
-        try {
-            $this->validate($request, [
-                'user_id' => 'required|integer|exists:users,id',
-                // 'position_code' => 'required',
-                // 'code' => 'required|string|max:100',
-                'identification_document_id' => 'required|integer',
-                'identification_number' => 'string|max:100',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-                'names' => 'string|max:100',
-                'phone' => 'nullable|string|max:20',
-                'marital_status_id' => 'required|integer',
-                'number_children' => 'nullable|integer',
-                'date_birth' => 'date',
-                'age' => 'required|integer',
-                'education_degree_id' => 'required|integer',
-                'profession_id' => 'nullable|integer',
-                'email' => 'nullable|string|max:100',
-            ]);
-
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $image = $request->file('image');
-                $imageName = time() . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('images', $imageName, 'public');
-            }
-
-            if($request->input('password')){
-                $user = \App\Models\User::find($request->user_id);
-                $user->update(['password' => bcrypt($request->password)]);
-            }
-
-            $cvBank = CvBank::updateOrCreate([
-                "user_id" => $request->user_id
-            ], [
-                'position_code' => $request->position_code,
-                'code' => $request->code,
-                'identification_document_id' => $request->identification_document_id,
-                'identification_number' => $request->identification_number,
-                'names' => $request->names,
-                'phone' => $request->phone,
-                'marital_status_id' => $request->marital_status_id,
-                'number_children' => $request->number_children,
-                'date_birth' => $request->date_birth,
-                'age' => $request->age,
-                'education_degree_id' => $request->education_degree_id,
-                'profession_id' => $request->profession_id,
-                'email' => $request->email,
-                'urls' => null,
-                'sex'               => $request->sex ?? null,
-                'date_affiliation'  => $request->date_affiliation ?? null,
-                'estado_actual_id'  => $request->estado_actual_id ?? null,
-                'training_type_id'  => $request->training_type_id ?? null
-            ]);
-
-            if ($imagePath) {
-                $cvBank->update(['image' => $imagePath]);
-            }
-        } catch (ValidationException | ModelNotFoundException | Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
-        }
-
-        return response()->json(['cvBank' => $cvBank]);
+        $this->validate($request, [
+            'position_code' => 'required|string|max:100',
+            'code' => 'required|string|max:100',
+            'identification_document_id' => 'required|integer',
+            'identification_number' => 'required|string|max:100',
+            'names' => 'required|string|max:100',
+            'phone' => 'nullable|string|max:20',
+            'marital_status_id' => 'required|integer',
+            'number_children' => 'nullable|integer',
+            'date_birth' => 'required|date',
+            'age' => 'required|integer',
+            'education_degree_id' => 'required|integer',
+            'profession_id' => 'nullable|integer',
+            'ocupacion_actual_id' => 'required|nullable|integer', // Validar ocupacion_actual_id
+            'email' => 'nullable|string|max:100',
+            'sex' => 'nullable|string|max:1',
+            'date_affiliation' => 'nullable|date',
+            'estado_actual_id' => 'nullable|integer',
+            'domain_id' => 'required|integer|exists:domains,id',
+            'password' => 'required|string|min:6',
+            'imagen' => 'nullable|string',
+        ]);
+    
+        // Crear un nuevo usuario asociado con el postulante
+        $user = new \App\Models\User([
+            'name' => $request->input('names'),
+            'email' => $request->input('email'),
+            'dni' => $request->input('identification_number'),
+            'password' => \Illuminate\Support\Facades\Hash::make($request->input('password')),
+            'domain_id' => $request->input('domain_id'),
+            'rol_id' => 17,
+            'type' => 'user',
+            'status' => 'active',
+        ]);
+    
+        // Guarda el usuario en la base de datos
+        $user->save();
+    
+        // Ahora crea el registro en la tabla `cv_banks`
+        $cvBank = CvBank::create([
+            'position_code' => $request->input('position_code'),
+            'code' => $request->input('code'),
+            'identification_document_id' => $request->input('identification_document_id'),
+            'identification_number' => $request->input('identification_number'),
+            'names' => $request->input('names'),
+            'phone' => $request->input('phone'),
+            'marital_status_id' => $request->input('marital_status_id'),
+            'number_children' => $request->input('number_children'),
+            'date_birth' => $request->input('date_birth'),
+            'age' => $request->input('age'),
+            'education_degree_id' => $request->input('education_degree_id'),
+            'profession_id' => $request->input('profession_id'),
+            'ocupacion_actual_id' => $request->input('ocupacion_actual_id'), // Asegúrate de capturar este valor
+            'email' => $request->input('email'),
+            'sex' => $request->input('sex'),
+            'date_affiliation' => $request->input('date_affiliation'),
+            'estado_actual_id' => $request->input('estado_actual_id'),
+            'domain_id' => $request->input('domain_id'),
+            'user_id' => $user->id, 
+            'image' => $request->input('imagen'),
+        ]);
+    
+        $user->update(['postulante_id' => $cvBank->id]);
+    
+        return response()->json(['cvBank' => $cvBank], 201);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
 
     /**
      * Display the specified resource.
@@ -149,25 +166,16 @@ class CvBankController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(CvBank $cvBank)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
     {
-
-        $data =  $this->validate($request, [
-            'position_code' => 'required|integer|exists:positions,id',
+        $data = $this->validate($request, [
+            'position_code' => 'required|string|max:100',
             'code' => 'required|string|max:100',
             'identification_document_id' => 'required|integer',
             'identification_number' => 'string|max:100',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'image' => 'nullable|string|regex:/^data:image\/(jpeg|png|gif|bmp);base64,/',  // Validación de cadena Base64
             'names' => 'string|max:100',
             'phone' => 'nullable|string|max:20',
             'marital_status_id' => 'required|integer',
@@ -179,42 +187,10 @@ class CvBankController extends Controller
             'email' => 'nullable|string|max:100'
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('images', $imageName, 'public');
-        }
-
         $cvBank = CvBank::findOrFail($id);
-        if (!$cvBank) {
-            return response()->json(['message' => 'Banco de CV no encontrado'], 404);
-        }
-        $cvBank->update([
-            'position_code' => $request->position_code,
-            'code' => $request->code,
-            'identification_document_id' => $request->identification_document_id,
-            'identification_number' => $request->identification_number,
-            'names' => $request->names,
-            'phone' => $request->phone,
-            'marital_status_id' => $request->marital_status_id,
-            'number_children' => $request->number_children,
-            'date_birth' => $request->date_birth,
-            'age' => $request->age,
-            'education_degree_id' => $request->education_degree_id,
-            'profession_id' => $request->profession_id,
-            'email' => $request->email,
-            'urls' => null,
-            'sex'               => $request->sex ?? null,
-            'date_affiliation'  => $request->date_affiliation ?? null,
-            'estado_actual_id'  => $request->estado_actual_id ?? null,
-        ]);
+        $cvBank->update($data);
 
-        if ($imagePath) {
-            $cvBank->update(['image' => $imagePath]);
-        }
-
-        return response()->json(['message' => 'banco CV actualizado correctamente', 'data' => $cvBank], 200);
+        return response()->json(['message' => 'Banco de CV actualizado correctamente', 'data' => $cvBank], 200);
     }
 
     /**

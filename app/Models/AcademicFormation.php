@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\CvBank\CvBank;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -69,6 +70,6 @@ class AcademicFormation extends Model
 
     public function domain()
     {
-        return $this->belongsTo(Domain::class, 'domain_id');
+        return $this->belongsTo(Domains::class, 'domain_id');
     }
 }

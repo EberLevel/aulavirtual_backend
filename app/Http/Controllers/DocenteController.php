@@ -9,31 +9,32 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Traits\FileTrait;
 use App\Traits\UserTrait;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
+
 class DocenteController extends Controller
 {
     use FileTrait, UserTrait;
+
     public function index($domain_id)
     {
-        $docente = DB::table('docentes as d')->select('d.*')->where('d.domain_id', $domain_id)->get();
-        foreach ($docente as $item) {
-            if (!empty($item->foto) && file_exists($item->foto) && is_readable($item->foto)) {
-                // Obtén el contenido del archivo y el tipo MIME
-                $fileContent = file_get_contents($item->foto);
-                $mimeType = mime_content_type($item->foto);
-    
-                // Convierte el contenido a Base64
-                $base64Content = base64_encode($fileContent);
-    
-                // Agrega el tipo MIME al principio de la cadena Base64
-                $item->foto = 'data:' . $mimeType . ';base64,' . $base64Content;
+        $docentes = DB::table('docentes as d')
+            ->select('d.*')
+            ->where('d.domain_id', $domain_id)
+            ->get();
+        
+        foreach ($docentes as $docente) {
+            if ($docente->foto) {
+                $docente->foto = 'data:image/jpeg;base64,' . $docente->foto;
             } else {
-                // Maneja el caso donde la foto no existe
-                // Por ejemplo, asigna una cadena vacía, un mensaje de error o una imagen predeterminada
-                $item->foto = null; // O 'foto no disponible' o la URL de una imagen predeterminada
+                // Manejar el caso donde la foto no existe
+                $docente->foto = null;
             }
         }
-        return response()->json(['Exito' => true, 'Datos' => $docente], 200);
+        
+        return response()->json(['Exito' => true, 'Datos' => $docentes], 200);
     }
+    
+    
 
     public function getLoggedDocente($docente_id, $dominio) {
         $docente = Docente::leftJoin('domains', 'domains.id', '=', 'docentes.domain_id')
@@ -46,12 +47,15 @@ class DocenteController extends Controller
             ->first();
     
         if ($docente) {
+            // Si la foto existe, añade el prefijo base64
+            if ($docente->foto) {
+                $docente->foto = 'data:image/jpeg;base64,' . $docente->foto;
+            }
             return response()->json($docente);
         }
     
         return response()->json('Docente no encontrado', 404);
-    }
-
+    }    
     
     public function imagen(Request $request)
     {
@@ -94,7 +98,6 @@ class DocenteController extends Controller
         return response()->json(['Exito' => true, 'Datos' => $docente], 200);
     }
     
-
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -121,58 +124,45 @@ class DocenteController extends Controller
             }
     
             // Procesar la imagen base64
+            $imageBase64 = $request->input('foto');
             $imagePath = null;
-            if ($request->has('foto')) {
-                $imageBase64 = $request->input('foto');
     
+            if ($imageBase64) {
                 // Verifica si la imagen está en formato base64
                 if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
                     $imageType = $matches[1]; // Obtener el tipo de imagen (jpeg, png, etc.)
                     $imageBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $imageBase64);
                     $image = base64_decode($imageBase64);
-                    
-                    // Genera un nombre único para la imagen
-                    $imageName = uniqid() . '.' . $imageType;
     
-                    // Guardar la imagen en el sistema de archivos
-                    $imagePath = 'docentes/' . $imageName;
-                    Storage::disk('public')->put($imagePath, $image);
-                } else {
-                    return response()->json(['Error' => true, 'Mensaje' => 'Formato de imagen inválido'], 400);
+                    // Puedes optar por almacenar la imagen directamente en Base64 o convertir a formato adecuado
+                    // Guarda la cadena base64 en la base de datos
+                    $imagePath = $imageBase64;
                 }
             }
-    
-            // Verificar si el correo es válido
-            $isValidEmail = $this->checkIsValidEmail($request->email);
-            if (!$isValidEmail) {
-                DB::rollBack();
-                return response()->json(['message' => 'Email inválido'], 400);
-            }
-    
-            // Guardar el registro del docente en la base de datos
             $docenteRol = DB::table('rol')->where('nombre', 'Docente')->first();
-            $docente = [
-                "codigo" => $request->codigo,
-                "nombres" => $request->nombres,
-                "celular" => $request->celular,
-                "profesion" => $request->profesion,
-                "tipo_documento" => $request->tipo_documento,
-                "doc_identidad" => $request->doc_identidad,
-                "fecha_nacimiento" => $request->fecha_nacimiento,
-                "genero" => $request->genero,
-                "foto" => $imagePath,
-                "roles" => $request->roles,
-                'domain_id' => $request->domain_id,
+            // Guardar el docente
+            $docenteData = [
+                'codigo' => $request->codigo,
+                'nombres' => $request->nombres,
+                'celular' => $request->celular,
+                'profesion' => $request->profesion,
+                'tipo_documento' => $request->tipo_documento,
+                'doc_identidad' => $request->doc_identidad,
+                'fecha_nacimiento' => $request->fecha_nacimiento,
+                'genero' => $request->genero,
+                'foto' => $imagePath, // La imagen en formato Base64
+                'roles' => $request->roles,
                 'email' => $request->email,
+                'domain_id' => $request->domain_id
             ];
     
-            $docenteId = DB::table('docentes')->insertGetId($docente);
+            $docenteId = DB::table('docentes')->insertGetId($docenteData);
     
             // Guardar también los datos del usuario
             $userData = [
                 'name' => $request->nombres,
                 'email' => $request->email,
-                'password' => Hash::make($request->clave),
+                'password' => Hash::make($request->contraseña),
                 'rol_id' => $docenteRol->id,
                 'domain_id' => $request->domain_id,
                 'docente_id' => $docenteId
@@ -186,6 +176,9 @@ class DocenteController extends Controller
             return response()->json(['Error' => true, 'Mensaje' => $e->getMessage()], 500);
         }
     }
+    
+    
+    
 
     public function update(Request $request, $id)
     {
@@ -216,25 +209,17 @@ class DocenteController extends Controller
                 return response()->json(['Error' => $validator->errors()], 422);
             }
     
-            // Procesar la imagen base64 si se envía
-            $imagePath = $docente->foto; // Mantén la imagen actual si no se envía una nueva
-            if ($request->has('foto')) {
-                $base64Image = $request->input('foto');
-    
+            // Procesar la imagen si se envía una nueva
+            $imageBase64 = $request->input('foto');
+            if ($imageBase64) {
                 // Verifica si la imagen está en formato base64
-                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
+                if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
                     $imageType = $matches[1]; // Obtener el tipo de imagen (jpeg, png, etc.)
-                    $base64Image = preg_replace('/^data:image\/\w+;base64,/', '', $base64Image);
-                    $image = base64_decode($base64Image);
+                    $imageBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $imageBase64);
+                    $image = base64_decode($imageBase64);
     
-                    // Genera un nombre único para la imagen
-                    $imageName = uniqid() . '.' . $imageType;
-    
-                    // Guardar la imagen en el sistema de archivos
-                    $imagePath = 'docentes/' . $imageName;
-                    Storage::disk('public')->put($imagePath, $image);
-                } else {
-                    return response()->json(['Error' => true, 'Mensaje' => 'Formato de imagen inválido'], 400);
+                    // Guarda la cadena base64 en la base de datos
+                    $docente->foto = $imageBase64;
                 }
             }
     
@@ -248,9 +233,9 @@ class DocenteController extends Controller
                 "doc_identidad" => $request->doc_identidad,
                 "fecha_nacimiento" => $request->fecha_nacimiento,
                 "genero" => $request->genero,
-                "foto" => $imagePath, // Si no se envía foto, se mantendrá la existente
                 "roles" => $request->roles,
                 'email' => $request->email,
+                // No actualizar "foto" si no se envía una nueva imagen
             ]);
     
             // Actualizar los datos correspondientes en la tabla users
@@ -279,7 +264,6 @@ class DocenteController extends Controller
     }
     
     
-
     public function destroy($id)
     {
         DB::beginTransaction();

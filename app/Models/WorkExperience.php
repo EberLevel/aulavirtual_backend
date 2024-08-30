@@ -41,7 +41,7 @@ class WorkExperience extends Model
     protected $appends = ['image_url'];
 
     public function domain() {
-        return $this->belongsTo(Domain::class, 'domain_id');
+        return $this->belongsTo(Domains::class, 'domain_id');
     }
 
     public function getImageUrlAttribute()
