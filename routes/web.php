@@ -40,6 +40,17 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('parametrosAll/{domain_id}', 'ParametroController@indexAll');
     $router->get('parametrosRecursive/{domain_id}', 'ParametroController@indexRecursive');
 
+    //informacion academica
+
+    $router->get('informacion-academica/data-create', 'InformacionAcademicaController@getDataCreate');
+    $router->get('informacion-academica/{id}', 'InformacionAcademicaController@show');
+    $router->get('informacion-academica/domain/{domain_id}', 'InformacionAcademicaController@getByDomainId');
+    
+    $router->get('informacion-academica', 'InformacionAcademicaController@index');  
+    $router->post('informacion-academica', 'InformacionAcademicaController@store');
+    $router->put('informacion-academica/{id}', 'InformacionAcademicaController@update');
+    $router->delete('informacion-academica/{id}', 'InformacionAcademicaController@destroy');
+
     $router->get('instituciones', 'InstitucioneController@index');
     $router->post('instituciones', 'InstitucioneController@store');
     $router->get('instituciones/{id}', 'InstitucioneController@show');
@@ -118,7 +129,6 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('permiso/guardar', 'PermisoController@store');
     $router->get('cursos/carrera/{id}', 'CursoController@index');
 
-    // CAPACITACIONES GESTION RALVA
     $router->get('capacitaciones', 'CapacitacionController@index');
     $router->post('capacitaciones', 'CapacitacionController@store');
     $router->get('capacitaciones/{id}', 'CapacitacionController@show');
