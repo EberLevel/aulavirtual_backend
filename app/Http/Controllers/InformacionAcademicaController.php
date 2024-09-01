@@ -16,13 +16,13 @@ class InformacionAcademicaController extends Controller
     /**
      * Obtener los datos necesarios para el formulario de creación.
      */
-    public function getDataCreate()
+    public function getDataCreate($domain_id)
     {
         try {
-            $gradosInstruccion = GradoInstruccion::all();
-            $profesiones = Profesion::all();
-            $estadoAvances = EstadoAvance::all();
-
+            $gradosInstruccion = GradoInstruccion::where('domain_id', $domain_id)->get();
+            $profesiones = Profesion::where('domain_id', $domain_id)->get();
+            $estadoAvances = EstadoAvance::where('domain_id', $domain_id)->get();
+    
             return response()->json([
                 'gradosInstruccion' => $gradosInstruccion,
                 'profesiones' => $profesiones,
@@ -32,6 +32,7 @@ class InformacionAcademicaController extends Controller
             return response()->json(['error' => 'Error al obtener datos: ' . $e->getMessage()], 500);
         }
     }
+    
 
     /**
      * Almacenar una nueva información académica en la base de datos.

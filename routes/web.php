@@ -41,15 +41,33 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('parametrosRecursive/{domain_id}', 'ParametroController@indexRecursive');
 
     //informacion academica
-
-    $router->get('informacion-academica/data-create', 'InformacionAcademicaController@getDataCreate');
+    $router->get('informacion-academica/data-create/{domain_id}', 'InformacionAcademicaController@getDataCreate');
     $router->get('informacion-academica/{id}', 'InformacionAcademicaController@show');
     $router->get('informacion-academica/domain/{domain_id}', 'InformacionAcademicaController@getByDomainId');
-    
-    $router->get('informacion-academica', 'InformacionAcademicaController@index');  
+
+    $router->get('informacion-academica', 'InformacionAcademicaController@index');
     $router->post('informacion-academica', 'InformacionAcademicaController@store');
     $router->put('informacion-academica/{id}', 'InformacionAcademicaController@update');
     $router->delete('informacion-academica/{id}', 'InformacionAcademicaController@destroy');
+
+    // Capacitaciones Postulante
+    $router->get('capacitaciones-postulante/data-create/{domain_id}', 'CapacitacionesPostulanteController@getDataCreate');
+    $router->post('capacitaciones-postulante', 'CapacitacionesPostulanteController@store');
+    $router->put('capacitaciones-postulante/{id}', 'CapacitacionesPostulanteController@update');
+    $router->get('capacitaciones-postulante/{id_postulante}', 'CapacitacionesPostulanteController@index');
+    $router->delete('capacitaciones-postulante/{id}', 'CapacitacionesPostulanteController@destroy');
+
+    // Referencias Laborales
+    $router->get('referencias-laborales/{id_postulante}', 'ReferenciasLaboralesController@index');
+    $router->post('referencias-laborales', 'ReferenciasLaboralesController@store');
+    $router->put('referencias-laborales/{id}', 'ReferenciasLaboralesController@update');
+    $router->delete('referencias-laborales/{id}', 'ReferenciasLaboralesController@destroy');
+
+    // Referencias Familiares
+    $router->post('referencias-familiares', 'ReferenciasFamiliaresController@store');
+    $router->put('referencias-familiares/{id}', 'ReferenciasFamiliaresController@update');
+    $router->get('referencias-familiares/{id_postulante}', 'ReferenciasFamiliaresController@index');
+    $router->delete('referencias-familiares/{id}', 'ReferenciasFamiliaresController@destroy');
 
     $router->get('instituciones', 'InstitucioneController@index');
     $router->post('instituciones', 'InstitucioneController@store');
@@ -82,7 +100,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
     //Docente 
     $router->get('docentes-dropdown/{domain_id}', 'DocenteController@dropdown');
-    
+
     $router->get('docentes/logged/{docente_id}/{dominio}', 'DocenteController@getLoggedDocente');
     $router->get('docentes/imagen', 'DocenteController@imagen');
     $router->get('docentes/listar/{domain_id}', 'DocenteController@index');
@@ -91,15 +109,15 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('docentes/actualizar/{id}', 'DocenteController@update');
     $router->delete('docentes/eliminar/{id}', 'DocenteController@destroy');
 
-    $router->get('cvbanksByDominio/{domain_id}', 'CvBankController@index');  
-    $router->get('cvbanks/filters-data', 'CvBankController@filtersData'); 
+    $router->get('cvbanksByDominio/{domain_id}', 'CvBankController@index');
+    $router->get('cvbanks/filters-data', 'CvBankController@filtersData');
     $router->get('cvbanks/create-data/{domain_id}', 'CvBankController@dataCreate');
-    $router->post('cvbanks', 'CvBankController@store'); 
-    $router->get('cvbanks/{id}', 'CvBankController@show');  
-    $router->get('cvbanks/user/{id}', 'CvBankController@showByUser');  
-    $router->put('cvbanks/{id}', 'CvBankController@update');  
-    $router->delete('cvbanks/{id}', 'CvBankController@destroy');  
-    
+    $router->post('cvbanks', 'CvBankController@store');
+    $router->get('cvbanks/{id}', 'CvBankController@show');
+    $router->get('cvbanks/user/{id}', 'CvBankController@showByUser');
+    $router->put('cvbanks/{id}', 'CvBankController@update');
+    $router->delete('cvbanks/{id}', 'CvBankController@destroy');
+
 
     $router->get('cursos', 'CursoController@index');
     $router->post('cursos', 'CursoController@store');
