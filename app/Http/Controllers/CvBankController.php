@@ -83,7 +83,7 @@ class CvBankController extends Controller
             'age' => 'required|integer',
             'education_degree_id' => 'required|integer',
             'profession_id' => 'nullable|integer',
-            'ocupacion_actual_id' => 'required|nullable|integer', // Validar ocupacion_actual_id
+            'ocupacion_actual_id' => 'required|nullable|integer', 
             'email' => 'nullable|string|max:100',
             'sex' => 'nullable|string|max:1',
             'date_affiliation' => 'nullable|date',
@@ -100,7 +100,7 @@ class CvBankController extends Controller
             'dni' => $request->input('identification_number'),
             'password' => \Illuminate\Support\Facades\Hash::make($request->input('password')),
             'domain_id' => $request->input('domain_id'),
-            'rol_id' => 17,
+            'rol_id' => 21,
             'type' => 'user',
             'status' => 'active',
         ]);
