@@ -57,11 +57,26 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('capacitaciones-postulante/{id_postulante}', 'CapacitacionesPostulanteController@index');
     $router->delete('capacitaciones-postulante/{id}', 'CapacitacionesPostulanteController@destroy');
 
+    // Experiencia Laboral
+    $router->get('experiencia-laboral/data-create/{domain_id}', 'ExperienciaLaboralController@getDataCreate');
+    $router->post('experiencia-laboral', 'ExperienciaLaboralController@store');
+    $router->put('experiencia-laboral/{id}', 'ExperienciaLaboralController@update');
+    $router->get('experiencia-laboral/{id_postulante}', 'ExperienciaLaboralController@index');
+    $router->delete('experiencia-laboral/{id}', 'ExperienciaLaboralController@destroy');
+
     // Referencias Laborales
     $router->get('referencias-laborales/{id_postulante}', 'ReferenciasLaboralesController@index');
     $router->post('referencias-laborales', 'ReferenciasLaboralesController@store');
     $router->put('referencias-laborales/{id}', 'ReferenciasLaboralesController@update');
     $router->delete('referencias-laborales/{id}', 'ReferenciasLaboralesController@destroy');
+
+    // Rutas para el FormularioFinalPostulante
+    $router->get('formulario-final-postulante/data-create', 'FormularioFinalPostulanteController@getDataCreate');
+    $router->get('formulario-final-postulante', 'FormularioFinalPostulanteController@index');
+    $router->post('formulario-final-postulante', 'FormularioFinalPostulanteController@store');
+    $router->put('formulario-final-postulante/{id}', 'FormularioFinalPostulanteController@update');
+    $router->delete('formulario-final-postulante/{id}', 'FormularioFinalPostulanteController@destroy');
+
 
     // Referencias Familiares
     $router->post('referencias-familiares', 'ReferenciasFamiliaresController@store');
