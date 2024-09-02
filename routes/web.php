@@ -311,4 +311,11 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
         $router->put('action/{domain_id}/{id}', 'AccionController@update');
         $router->delete('action/{domain_id}/{id}', 'AccionController@destroy');
     });
+
+    // ofertas de empleo
+    $router->get('ofertas-empleo', 'OfertasEmpleoController@index');
+    $router->post('ofertas-empleo', 'OfertasEmpleoController@store');
+    $router->get('ofertas-empleo/{id}', 'OfertasEmpleoController@show');
+    $router->put('ofertas-empleo/{id}', 'OfertasEmpleoController@update');
+    $router->delete('ofertas-empleo/{id}', 'OfertasEmpleoController@destroy');
 });
