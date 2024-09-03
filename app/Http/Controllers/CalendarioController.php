@@ -42,27 +42,30 @@ class CalendarioController extends Controller
     public function getDocenteCalendario(Request $request)
     {
         $docenteId = $request->input('docente_id');
+        $domainId = $request->input('domain_id'); // Usar el domain_id del request
+    
         $eventos = DB::table('docentes as d')
             ->select('d.id')
             ->selectRaw('COALESCE((
-            SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                    "day_id", ch.day_id,
-                    "hora_inicio", ch.hora_inicio,
-                    "hora_fin", ch.hora_fin,
-                    "fecha_inicio", ch.fecha_inicio,
-                    "fecha_fin", ch.fecha_fin,
-                    "cursoNombre", c.nombre
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        "day_id", ch.day_id,
+                        "hora_inicio", ch.hora_inicio,
+                        "hora_fin", ch.hora_fin,
+                        "fecha_inicio", ch.fecha_inicio,
+                        "fecha_fin", ch.fecha_fin,
+                        "cursoNombre", c.nombre
+                    )
                 )
-            )
-            FROM curso_horario ch
-            JOIN cursos c ON c.id = ch.curso_id
-            WHERE ch.curso_id = c.id
-            AND ch.domain_id = 1
-        ), "[]") AS horarios')
+                FROM curso_horario ch
+                JOIN cursos c ON c.id = ch.curso_id
+                WHERE ch.docente_id = d.id
+                AND ch.domain_id = ?
+            ), "[]") AS horarios', [$domainId]) // Pasa el domain_id como parámetro
             ->where('d.id', $docenteId)
             ->groupBy('d.id', 'horarios')
             ->get();
+    
         return response()->json($eventos);
     }
 }

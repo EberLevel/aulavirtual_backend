@@ -34,8 +34,6 @@ class DocenteController extends Controller
         return response()->json(['Exito' => true, 'Datos' => $docentes], 200);
     }
     
-    
-
     public function getLoggedDocente($docente_id, $dominio) {
         $docente = Docente::leftJoin('domains', 'domains.id', '=', 'docentes.domain_id')
             ->select(
@@ -177,9 +175,6 @@ class DocenteController extends Controller
         }
     }
     
-    
-    
-
     public function update(Request $request, $id)
     {
         DB::beginTransaction();
