@@ -24,7 +24,8 @@ class CursoController extends Controller
             'area_de_formacion.tx_item_description as area_de_formacion_nombre',
             'carreras.nombres as carrera_nombre',
             'estado.tx_item_description as estado_nombre',
-            'docentes.id as docente_id'
+            'docentes.id as docente_id',
+            'docentes.nombres as docente_nombre'
         )
         ->get();
 
