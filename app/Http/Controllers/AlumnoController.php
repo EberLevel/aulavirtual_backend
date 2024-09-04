@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Traits\UserTrait;
 use Illuminate\Support\Facades\Hash;
 
+
 class AlumnoController extends Controller
 {
     use UserTrait;
@@ -55,7 +56,9 @@ class AlumnoController extends Controller
                 'apellidos' => 'required|string|max:255',
                 'cicloId' => 'required|integer',
                 'carreraId' => 'required|integer',
-                'promocion_id' => 'required|integer'
+                'promocion_id' => 'required|integer',
+                'email' => 'required|email|max:255',
+                'contraseña' => 'required|string|min:6' // Aseguramos que se envíe la contraseña
             ]);
 
             $promocion = Promocion::find($request->input('promocion_id'));
@@ -85,16 +88,30 @@ class AlumnoController extends Controller
                 "foto_carnet" => $fotoCarnet
             ];
 
+            // Insertar el alumno en la base de datos y obtener el ID del alumno
             $alumnoId = DB::table('alumnos')->insertGetId($alumno);
+
+            // Crear el usuario correspondiente en la tabla 'users'
+            DB::table('users')->insert([
+                'alumno_id' => $alumnoId, // Relacionamos el usuario con el ID del alumno
+                'name' => $request->input('nombres'),
+                'lastname' => $request->input('apellidos'),
+                'email' => $request->input('email'),
+                'dni' => $request->input('numeroDocumento'),
+                'password' => Hash::make($request->input('contraseña')), // Hasheamos la contraseña
+                'created_at' => Carbon::now(), // Usamos Carbon::now()
+                'updated_at' => Carbon::now(), // Usamos Carbon::now()
+            ]);
 
             DB::commit();
 
-            return response()->json(['alumno_id' => $alumnoId, 'message' => 'Alumno creado correctamente'], 201);
+            return response()->json(['alumno_id' => $alumnoId, 'message' => 'Alumno y usuario creados correctamente'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
     // Actualizar un alumno existente
     public function update(Request $request, $id, $domain_id)
@@ -111,16 +128,16 @@ class AlumnoController extends Controller
             'fechaNacimiento' => 'required|date',
             'domain_id' => 'required|integer',
         ]);
-    
+
         $alumno = Alumno::where('id', $id)
-                        ->where('domain_id', $domain_id)
-                        ->first();
-    
+            ->where('domain_id', $domain_id)
+            ->first();
+
         if ($alumno) {
             // Procesar las imágenes si están presentes
             $fotoPerfil = $request->input('fotoPerfil') ? $request->input('fotoPerfil') : $alumno->foto_perfil;
             $fotoCarnet = $request->input('fotoCarnet') ? $request->input('fotoCarnet') : $alumno->foto_carnet;
-    
+
             // Actualizar los datos del alumno
             $alumno->update([
                 "codigo" => $request->input('codigo'),
@@ -137,10 +154,10 @@ class AlumnoController extends Controller
                 "foto_perfil" => $fotoPerfil,
                 "foto_carnet" => $fotoCarnet,
             ]);
-    
+
             // Actualizar el usuario correspondiente en la tabla users
             $user = DB::table('users')->where('alumno_id', $id)->first();
-    
+
             if ($user) {
                 DB::table('users')->where('id', $user->id)->update([
                     'name' => $request->input('nombres'),
@@ -150,13 +167,13 @@ class AlumnoController extends Controller
                     'password' => Hash::make($request->input('contraseña')),  // Hashear la contraseña
                 ]);
             }
-    
+
             return response()->json($alumno, 200);
         }
-    
+
         return response()->json(['message' => 'Alumno no encontrado'], 404);
     }
-    
+
 
     // Eliminar un alumno
     public function destroy($id, $dominio)
@@ -174,11 +191,11 @@ class AlumnoController extends Controller
     public function show($id, $dominio)
     {
         $alumno = Alumno::where('id', $id)->where('domain_id', $dominio)->first();
-    
+
         if ($alumno) {
             return response()->json($alumno, 200);
         }
-    
+
         return response()->json(['message' => 'Alumno no encontrado'], 404);
     }
 
