@@ -84,11 +84,19 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('referencias-familiares/{id_postulante}', 'ReferenciasFamiliaresController@index');
     $router->delete('referencias-familiares/{id}', 'ReferenciasFamiliaresController@destroy');
 
-    $router->get('instituciones', 'InstitucioneController@index');
-    $router->post('instituciones', 'InstitucioneController@store');
-    $router->get('instituciones/{id}', 'InstitucioneController@show');
-    $router->put('instituciones/{id}', 'InstitucioneController@update');
-    $router->delete('instituciones/{id}', 'InstitucioneController@destroy');
+    //NOSE SI SERVIRAN
+    // $router->get('instituciones', 'InstitucioneController@index');
+    // $router->post('instituciones', 'InstitucioneController@store');
+    // $router->get('instituciones/{id}', 'InstitucioneController@show');
+    // $router->put('instituciones/{id}', 'InstitucioneController@update');
+    // $router->delete('instituciones/{id}', 'InstitucioneController@destroy');
+
+    $router->get('instituciones', 'InstitucionesController@index');
+    $router->get('instituciones/{id}', 'InstitucionesController@show');
+    $router->post('instituciones', 'InstitucionesController@store');
+    $router->put('instituciones/{id}', 'InstitucionesController@update');
+    $router->delete('instituciones/{id}', 'InstitucionesController@destroy');
+
     $router->get('institutions-dropdown', 'InstitucioneController@dropdown');
     $router->get('carreras-list/{dominio_id}', 'CarreraController@index');
     $router->post('carreras', 'CarreraController@store');
