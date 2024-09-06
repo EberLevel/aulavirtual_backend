@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\CapacitacionPostulante;
@@ -8,27 +9,11 @@ use Exception;
 
 class CapacitacionesPostulanteController extends Controller
 {
-    public function getDataCreate($domain_id)
-    {
-        try {
-            $estados = Ano::where('domain_id', $domain_id)->get();
-    
-            if ($estados->isEmpty()) {
-                return response()->json(['message' => 'No se encontraron estados para este dominio'], 404);
-            }
-    
-            return response()->json(['estados' => $estados], 200);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Error al obtener datos: ' . $e->getMessage()], 500);
-        }
-    }
-
     // Crear una nueva capacitación
     public function store(Request $request)
     {
         $this->validate($request, [
             'nombre' => 'required|string|max:255',
-            'estado' => 'required|integer|exists:ano,id',
             'institucion' => 'required|string|max:255',
             'fecha_inicio' => 'required|date',
             'fecha_termino' => 'required|date',
@@ -68,7 +53,6 @@ class CapacitacionesPostulanteController extends Controller
     {
         $this->validate($request, [
             'nombre' => 'required|string|max:255',
-            'estado' => 'required|integer|exists:ano,id',
             'institucion' => 'required|string|max:255',
             'fecha_inicio' => 'required|date',
             'fecha_termino' => 'required|date',
@@ -109,17 +93,12 @@ class CapacitacionesPostulanteController extends Controller
     public function index($id_postulante)
     {
         try {
-            $capacitaciones = CapacitacionPostulante::with('estadoAno')
-                ->where('id_postulante', $id_postulante)
-                ->get();
+            $capacitaciones = CapacitacionPostulante::where('id_postulante', $id_postulante)->get();
             return response()->json(['data' => $capacitaciones], 200);
         } catch (Exception $e) {
             return response()->json(['error' => 'Error al obtener las capacitaciones: ' . $e->getMessage()], 500);
         }
     }
-    
-    
-    
 
     // Eliminar una capacitación
     public function destroy($id)
@@ -130,6 +109,20 @@ class CapacitacionesPostulanteController extends Controller
             return response()->json(['message' => 'Capacitación eliminada correctamente'], 200);
         } catch (Exception $e) {
             return response()->json(['error' => 'Error al eliminar la capacitación: ' . $e->getMessage()], 500);
+        }
+    }
+    public function getDataCreate($domain_id)
+    {
+        try {
+            $estados = Ano::where('domain_id', $domain_id)->get();
+    
+            if ($estados->isEmpty()) {
+                return response()->json(['message' => 'No se encontraron estados para este dominio'], 404);
+            }
+    
+            return response()->json(['estados' => $estados], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener datos: ' . $e->getMessage()], 500);
         }
     }
 }
