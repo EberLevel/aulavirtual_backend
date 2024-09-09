@@ -55,6 +55,30 @@ class CursoController extends Controller
         return response()->json($courses);
     }
 
+    public function getCursosByDomain($domainId)
+{
+    $courses = Curso::leftJoin('t_g_parametros as ciclo', 'ciclo.nu_id_parametro', '=', 'cursos.ciclo_id')
+        ->leftJoin('t_g_parametros as modulo_formativo', 'modulo_formativo.nu_id_parametro', '=', 'cursos.modulo_formativo_id')
+        ->leftJoin('t_g_parametros as area_de_formacion', 'area_de_formacion.nu_id_parametro', '=', 'cursos.area_de_formacion_id')
+        ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
+        ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
+        ->leftJoin('docentes', 'docentes.id', '=', 'cursos.docente_id')
+        ->where('cursos.domain_id', $domainId)
+        ->select(
+            'cursos.*',
+            'ciclo.tx_item_description as ciclo_nombre',
+            'modulo_formativo.tx_item_description as modulo_formativo_nombre',
+            'area_de_formacion.tx_item_description as area_de_formacion_nombre',
+            'carreras.nombres as carrera_nombre',
+            'estado.tx_item_description as estado_nombre',
+            'docentes.id as docente_id',
+            'docentes.nombres as docente_nombre'
+        )
+        ->get();
+
+    return response()->json($courses);
+}
+
 
     public function store(Request $request){
         $this->validate($request, [
