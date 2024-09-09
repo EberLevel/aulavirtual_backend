@@ -57,20 +57,23 @@ class AlumnoController extends Controller
                 'cicloId' => 'required|integer',
                 'carreraId' => 'required|integer',
                 'promocion_id' => 'required|integer',
+                'domain_id' => 'required|integer',
+                'estadoId' => 'required|integer',
                 'email' => 'required|email|max:255',
                 'contraseña' => 'required|string|min:6' // Aseguramos que se envíe la contraseña
             ]);
-
+    
             $promocion = Promocion::find($request->input('promocion_id'));
-
+    
             if (!$promocion) {
                 return response()->json(['message' => 'Promoción no encontrada'], 400);
             }
-
+    
             // Procesar imágenes en base64 si están presentes
             $fotoPerfil = $request->input('fotoPerfil') ? $request->input('fotoPerfil') : null;
             $fotoCarnet = $request->input('fotoCarnet') ? $request->input('fotoCarnet') : null;
-
+    
+            // Crear el alumno
             $alumno = [
                 "codigo" => $request->input('codigo'),
                 "nombres" => $request->input('nombres'),
@@ -84,13 +87,14 @@ class AlumnoController extends Controller
                 "direccion" => $request->input('direccion'),
                 "domain_id" => $request->input('domain_id'),
                 "promocion_id" => $promocion->id,
+                "estado_id" => $request->input('estadoId'),
                 "foto_perfil" => $fotoPerfil,
                 "foto_carnet" => $fotoCarnet
             ];
-
+    
             // Insertar el alumno en la base de datos y obtener el ID del alumno
             $alumnoId = DB::table('alumnos')->insertGetId($alumno);
-
+    
             // Crear el usuario correspondiente en la tabla 'users'
             DB::table('users')->insert([
                 'alumno_id' => $alumnoId, // Relacionamos el usuario con el ID del alumno
@@ -98,14 +102,35 @@ class AlumnoController extends Controller
                 'lastname' => $request->input('apellidos'),
                 'email' => $request->input('email'),
                 'dni' => $request->input('numeroDocumento'),
+                'domain_id' => $request->input('domain_id'),
                 'password' => Hash::make($request->input('contraseña')), // Hasheamos la contraseña
-                'created_at' => Carbon::now(), // Usamos Carbon::now()
-                'updated_at' => Carbon::now(), // Usamos Carbon::now()
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+                'rol_id' => 12
             ]);
-
+    
+            // Ahora obtenemos todos los cursos de la carrera seleccionada
+            $carreraId = $request->input('carreraId');
+            $domainId = $request->input('domain_id');
+            
+            $cursos = DB::table('cursos')
+                ->where('carrera_id', $carreraId)
+                ->get();
+    
+            // Insertamos los cursos en la tabla `curso_alumno`
+            foreach ($cursos as $curso) {
+                DB::table('curso_alumno')->insert([
+                    'curso_id' => $curso->id,
+                    'alumno_id' => $alumnoId,
+                    'domain_id' => $domainId,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
+            }
+    
             DB::commit();
-
-            return response()->json(['alumno_id' => $alumnoId, 'message' => 'Alumno y usuario creados correctamente'], 201);
+    
+            return response()->json(['alumno_id' => $alumnoId, 'message' => 'Alumno y usuario creados correctamente, y asignado a los cursos de la carrera.'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
@@ -127,18 +152,21 @@ class AlumnoController extends Controller
             'direccion' => 'required|string|max:255',
             'fechaNacimiento' => 'required|date',
             'domain_id' => 'required|integer',
+            'estadoId' => 'required|integer',
+            'promocion_id' => 'required|integer',
+            'estadoAlumno' => 'required|string|in:EN PROCESO,RETIRADO' // Validación del estadoAlumno
         ]);
-
+    
         $alumno = Alumno::where('id', $id)
             ->where('domain_id', $domain_id)
             ->first();
-
+    
         if ($alumno) {
             // Procesar las imágenes si están presentes
             $fotoPerfil = $request->input('fotoPerfil') ? $request->input('fotoPerfil') : $alumno->foto_perfil;
             $fotoCarnet = $request->input('fotoCarnet') ? $request->input('fotoCarnet') : $alumno->foto_carnet;
-
-            // Actualizar los datos del alumno
+    
+            // Actualizar los datos del alumno, incluyendo estadoAlumno
             $alumno->update([
                 "codigo" => $request->input('codigo'),
                 "nombres" => $request->input('nombres'),
@@ -148,31 +176,21 @@ class AlumnoController extends Controller
                 "carrera_id" => $request->input('carreraId'),
                 "ciclo_id" => $request->input('cicloId'),
                 "dni" => $request->input('dni'),
-                "genero" => $request->input('genero'),
                 "fecha_nacimiento" => $request->input('fechaNacimiento'),
                 "direccion" => $request->input('direccion'),
+                "estado_id" => $request->input('estadoId'),
+                "promocion_id" => $request->input('promocion_id'),
                 "foto_perfil" => $fotoPerfil,
                 "foto_carnet" => $fotoCarnet,
+                "estadoAlumno" => $request->input('estadoAlumno'),  // Asegúrate de tener esta línea
             ]);
-
-            // Actualizar el usuario correspondiente en la tabla users
-            $user = DB::table('users')->where('alumno_id', $id)->first();
-
-            if ($user) {
-                DB::table('users')->where('id', $user->id)->update([
-                    'name' => $request->input('nombres'),
-                    'lastname' => $request->input('apellidos'),
-                    'email' => $request->input('email'),
-                    'dni' => $request->input('dni'),
-                    'password' => Hash::make($request->input('contraseña')),  // Hashear la contraseña
-                ]);
-            }
-
+    
             return response()->json($alumno, 200);
         }
-
+    
         return response()->json(['message' => 'Alumno no encontrado'], 404);
     }
+    
 
 
     // Eliminar un alumno

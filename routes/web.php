@@ -348,11 +348,16 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
     //alumno preguntas
     $router->post('alumno-preguntas', 'PreguntaAlumnoController@guardarAlumnoPregunta');
+    $router->get('alumno-preguntas/{preguntaAlumnoId}', 'PreguntaAlumnoController@obtenerPreguntaAlumno');
+    $router->get('preguntasByAlumno/{preguntaId}', 'PreguntaAlumnoController@obtenerAlumnosPorPreguntaId');
+    $router->put('pregunta-alumno', 'PreguntaAlumnoController@actualizarEstado');
+    $router->get('suma-calificaciones', 'PreguntaAlumnoController@obtenerSumaCalificaciones');
+
+
 
 
 
     Route::get('cursos/{curso_id}/evaluaciones', 'PreguntaAlumnoController@obtenerCursosConEvaluaciones');
-
     Route::get('obtener-preguntas-corregidas/{pregunta_id}', 'PreguntaAlumnoController@obtenerPreguntasNoCorregidas');
 
     //Ceiber Conrago Garibay Choque - 2024-08-10 Subgrupo de rutas para las apis de organizacion institucional
