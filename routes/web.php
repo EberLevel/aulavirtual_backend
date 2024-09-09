@@ -340,11 +340,10 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
 
 
-    //get cursos by docente
+    //cursos
     $router->get('cursos-docente/{docente_id}', 'CursoDocenteController@index');
-
-    //get cursos by alumno
     $router->get('cursos-alumno/{alumno_id}', 'CursoAlumnoController@index');
+    $router->put('curso/estado', 'CursoAlumnoController@updateCursoEstado');
 
     //alumno preguntas
     $router->post('alumno-preguntas', 'PreguntaAlumnoController@guardarAlumnoPregunta');
@@ -352,7 +351,6 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('preguntasByAlumno/{preguntaId}', 'PreguntaAlumnoController@obtenerAlumnosPorPreguntaId');
     $router->put('pregunta-alumno', 'PreguntaAlumnoController@actualizarEstado');
     $router->get('suma-calificaciones', 'PreguntaAlumnoController@obtenerSumaCalificaciones');
-
 
 
 
