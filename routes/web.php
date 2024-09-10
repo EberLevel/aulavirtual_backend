@@ -374,4 +374,17 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('ofertas-empleo/{id}', 'OfertasEmpleoController@show');
     $router->put('ofertas-empleo/{id}', 'OfertasEmpleoController@update');
     $router->delete('ofertas-empleo/{id}', 'OfertasEmpleoController@destroy');
+
+    // Rutas para proyectos
+    $router->get('proyectos', 'ProyectosController@index'); // Listar todos los proyectos
+    $router->post('proyectos', 'ProyectosController@store'); // Crear un nuevo proyecto
+    $router->get('proyectos/{id}', 'ProyectosController@show'); // Mostrar un proyecto específico
+    $router->put('proyectos/{id}', 'ProyectosController@update'); // Actualizar un proyecto
+    $router->delete('proyectos/{id}', 'ProyectosController@destroy'); // Eliminar un proyecto
+
+    // Rutas para tareas de proyectos
+    $router->get('proyectos/{proyectoId}/tareas', 'ProyectosController@listarTareas'); // Listar tareas de un proyecto específico
+    $router->post('proyectos/{proyectoId}/tareas', 'ProyectosController@añadirTarea'); // Añadir una tarea a un proyecto
+    $router->put('proyectos/{proyectoId}/tareas/{tareaId}', 'ProyectosController@actualizarTarea'); // Actualizar una tarea de un proyecto
+    $router->delete('proyectos/{proyectoId}/tareas/{tareaId}', 'ProyectosController@eliminarTarea'); // Eliminar una tarea de un proyecto
 });
