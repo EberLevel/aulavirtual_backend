@@ -343,6 +343,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //cursos
     $router->get('cursos-docente/{docente_id}', 'CursoDocenteController@index');
     $router->get('cursos-alumno/{alumno_id}', 'CursoAlumnoController@index');
+    $router->get('cursosByAlumno/{alumno_id}', 'CursoAlumnoController@indexByAlumno');
     $router->put('curso/estado', 'CursoAlumnoController@updateCursoEstado');
 
     //alumno preguntas
