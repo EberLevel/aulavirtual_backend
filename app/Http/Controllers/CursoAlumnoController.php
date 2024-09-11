@@ -15,7 +15,40 @@ class CursoAlumnoController extends Controller
     {
         try {
             $courses = Curso::leftJoin('curso_alumno', 'curso_alumno.curso_id', '=', 'cursos.id')
-                ->leftJoin('t_g_parametros as ciclo', 'ciclo.nu_id_parametro', '=', 'cursos.ciclo_id')
+                ->leftJoin('ciclos', 'ciclos.id', '=', 'cursos.ciclo_id')  // Join con la tabla ciclos
+                ->leftJoin('area_de_formacion', 'area_de_formacion.id', '=', 'cursos.area_de_formacion_id')  // Join con la tabla area_de_formacion
+                ->leftJoin('modulos_formativos', 'modulos_formativos.id', '=', 'cursos.modulo_formativo_id')  // Join con la tabla modulos_formativos
+                ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
+                ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
+                ->leftJoin('alumnos', 'alumnos.id', '=', 'curso_alumno.alumno_id')
+                // Agregar filtro para estadoAlumno
+                ->where('curso_alumno.alumno_id', $alumno_id)
+                ->where('alumnos.estadoAlumno', '!=', 'RETIRADO')
+                ->select(
+                    'cursos.*',
+                    'ciclos.nombre as ciclo_nombre',  // Obtiene el nombre del ciclo
+                    'area_de_formacion.nombre as area_de_formacion_nombre',  // Obtiene el nombre del área de formación
+                    'modulos_formativos.nombre as modulo_formativo_nombre',  // Obtiene el nombre del módulo formativo
+                    'carreras.nombres as carrera_nombre',
+                    'estado.tx_item_description as estado_nombre',
+                    'alumnos.id as alumno_id',
+                    'curso_alumno.estado_id as estado_id'
+                )
+                ->get();
+    
+            return response()->json($courses);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    
+
+    public function indexByAlumno($alumno_id)
+    {
+        try {
+            $courses = Curso::leftJoin('curso_alumno', 'curso_alumno.curso_id', '=', 'cursos.id')
+                ->leftJoin('ciclos', 'ciclos.id', '=', 'cursos.ciclo_id')  // Join con la tabla ciclos
                 ->leftJoin('t_g_parametros as modulo_formativo', 'modulo_formativo.nu_id_parametro', '=', 'cursos.modulo_formativo_id')
                 ->leftJoin('t_g_parametros as area_de_formacion', 'area_de_formacion.nu_id_parametro', '=', 'cursos.area_de_formacion_id')
                 ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
@@ -27,15 +60,16 @@ class CursoAlumnoController extends Controller
                 ->where('curso_alumno.estado_id', 2)
                 ->select(
                     'cursos.*',
-                    'ciclo.tx_item_description as ciclo_nombre',
+                    'ciclos.nombre as ciclo_nombre',  // Obtiene el nombre del ciclo desde la tabla ciclos
                     'modulo_formativo.tx_item_description as modulo_formativo_nombre',
                     'area_de_formacion.tx_item_description as area_de_formacion_nombre',
                     'carreras.nombres as carrera_nombre',
                     'estado.tx_item_description as estado_nombre',
-                    'alumnos.id as alumno_id'
+                    'alumnos.id as alumno_id',
+                    'curso_alumno.estado_id as estado_id'
                 )
                 ->get();
-
+    
             return response()->json($courses);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

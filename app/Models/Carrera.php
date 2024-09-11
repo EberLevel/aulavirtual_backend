@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Carrera extends Model
 {
-    protected $fillable = ['codigo', 'nombres', 'domain_id'];
+    protected $table = 'carreras';
+
+    protected $fillable = ['codigo', 'nombres', 'domain_id', 'plan_de_estudios_id'];
 }
-    

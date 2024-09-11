@@ -14,19 +14,23 @@ class EvaluacionesController extends Controller
      */
     public function index($id)
     {
-        $evaluaciones = Evaluaciones::leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'evaluaciones.estado_id')
-        ->leftJoin('t_g_parametros as tipo_evaluacion', 'tipo_evaluacion.nu_id_parametro', '=', 'evaluaciones.tipo_evaluacion_id')
-        ->where('evaluaciones.grupo_de_evaluaciones_id', $id)
-        ->whereNull('evaluaciones.deleted_at')
-        ->select(
-            'evaluaciones.*',
-            'estado.tx_item_description as estado_nombre',
-            'tipo_evaluacion.tx_item_description as tipo_evaluacion_nombre'
-        )
-        ->get();
+        $evaluaciones = Evaluaciones::leftJoin('estados', 'estados.id', '=', 'evaluaciones.estado_id')
+            ->leftJoin('t_g_parametros as tipo_evaluacion', 'tipo_evaluacion.nu_id_parametro', '=', 'evaluaciones.tipo_evaluacion_id')
+            ->where('evaluaciones.grupo_de_evaluaciones_id', $id)
+            ->whereNull('evaluaciones.deleted_at')
+            ->select(
+                'evaluaciones.*',
+                'estados.nombre as estado_nombre', // Obteniendo el nombre del estado desde la tabla `estados`
+                'tipo_evaluacion.tx_item_description as tipo_evaluacion_nombre'
+            )
+            ->get();
     
         return response()->json($evaluaciones);
     }
+    
+    
+
+    
     public function getEvaluacionById($id)
     {
         // Buscar la evaluación por su ID
@@ -34,7 +38,6 @@ class EvaluacionesController extends Controller
             'id',
             'nombre',
             'tipo_evaluacion_id',
-            'porcentaje_evaluacion',
             'fecha_y_hora_programo',
             'observaciones',
             'estado_id',
@@ -53,33 +56,33 @@ class EvaluacionesController extends Controller
         return response()->json($evaluacion);
     }
     public function updateEvaluacionById(Request $request, $id)
-{
-    // Validar los datos recibidos
-    $validatedData = $this->validate($request, [
-        'nombre' => 'required|string|max:255',
-        'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro',
-        'porcentaje_evaluacion' => 'required|numeric',
-        'fecha_y_hora_programo' => 'required|date',
-        'observaciones' => 'nullable|string',
-        'estado_id' => 'required',
-        'domain_id' => 'required|integer',
-        'grupo_de_evaluaciones_id' => 'required|integer',
-    ]);
-
-    // Buscar la evaluación por su ID
-    $evaluacion = Evaluaciones::find($id);
-
-    // Verificar si la evaluación existe
-    if (!$evaluacion) {
-        return response()->json(['message' => 'Evaluación no encontrada'], 404);
+    {
+        // Validar los datos recibidos
+        $validatedData = $this->validate($request, [
+            'nombre' => 'required|string|max:255',
+            'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro', // Si aún usas t_g_parametros para el tipo de evaluación
+            'fecha_y_hora_programo' => 'required|date',
+            'observaciones' => 'nullable|string',
+            'estado_id' => 'required|exists:estados,id', // Cambiado para validar contra la tabla `estados`
+            'domain_id' => 'required|integer',
+            'grupo_de_evaluaciones_id' => 'required|integer',
+        ]);
+    
+        // Buscar la evaluación por su ID
+        $evaluacion = Evaluaciones::find($id);
+    
+        // Verificar si la evaluación existe
+        if (!$evaluacion) {
+            return response()->json(['message' => 'Evaluación no encontrada'], 404);
+        }
+    
+        // Actualizar la evaluación con los datos validados
+        $evaluacion->update($validatedData);
+    
+        // Devolver la evaluación actualizada
+        return response()->json($evaluacion);
     }
-
-    // Actualizar la evaluación con los datos validados
-    $evaluacion->update($validatedData);
-
-    // Devolver la evaluación actualizada
-    return response()->json($evaluacion);
-}
+    
 
     /**
      * Store a newly created resource in storage.
@@ -92,7 +95,6 @@ class EvaluacionesController extends Controller
         $validatedData =$this->validate($request, [
             'nombre' => 'required|string|max:255',
             'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro',
-            'porcentaje_evaluacion' => 'required|numeric',
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required',
@@ -128,7 +130,6 @@ class EvaluacionesController extends Controller
         $validatedData = $this->validate($request, [
             'nombre' => 'required|string|max:255',
             'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro',
-            'porcentaje_evaluacion' => 'required|numeric',
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required',

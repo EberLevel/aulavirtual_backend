@@ -10,7 +10,7 @@ class EstadoCurso extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'estado_de_curso';
+    protected $table = 'plan_de_estudios';
 
     protected $fillable = [
         'nombre',
