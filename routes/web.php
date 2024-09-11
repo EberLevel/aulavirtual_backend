@@ -193,7 +193,6 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
 
     $router->get('alumnos/logged/{alumno_id}/{dominio}', 'AlumnoController@getLoggedAlumno');
-    $router->get('alumnos/{id}/{dominio}', 'AlumnoController@show');
     $router->get('alumnos/{dominio}', 'AlumnoController@index');
     $router->post('alumnos', 'AlumnoController@store');
     $router->put('alumnos/{id}/{domain_id}', 'AlumnoController@update');
