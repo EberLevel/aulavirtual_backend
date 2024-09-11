@@ -106,7 +106,11 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //common routes
     //get carreras dropdown
     $router->get('carreras-dropdown', 'CarreraController@dropdown');
-    $router->get('carreras-dropdown/{domain_id}', 'CarreraController@dropdown');
+    
+    $router->get('carreras-dropdown/{plan_de_estudios_id}', 'CarreraController@dropDown');
+
+
+
     //get ciclos dropdown
     $router->get('ciclos-dropdown', 'ParametroController@dropdown');
     $router->get('ciclos-dropdown/{domain_id}', 'CicloController@dropDown');
@@ -183,6 +187,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('grupo-de-evaluaciones', 'GrupoDeEvaluacionesController@store');
     $router->put('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@update');
     $router->delete('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@destroy');
+    
     $router->get('evaluacion/{id}', 'EvaluacionesController@getEvaluacionById');
     $router->put('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
 
