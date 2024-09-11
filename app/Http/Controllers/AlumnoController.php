@@ -22,11 +22,15 @@ class AlumnoController extends Controller
         $alumnos = Alumno::leftJoin('ciclos', 'ciclos.id', '=', 'alumnos.ciclo_id')
             ->leftJoin('carreras', 'carreras.id', '=', 'alumnos.carrera_id')
             ->leftJoin('domains', 'domains.id', '=', 'alumnos.domain_id')
+            ->leftJoin('plan_de_estudios', 'plan_de_estudios.id', '=', 'alumnos.estado_id')
+            ->leftJoin('promociones', 'promociones.id', '=', 'alumnos.promocion_id')
             ->select(
                 'alumnos.*',
                 'ciclos.nombre as ciclo_nombre',
                 'carreras.nombres as carrera_nombre',
-                'domains.nombre as institucion'
+                'domains.nombre as institucion',
+                'plan_de_estudios.nombre as estado_nombre',
+                'promociones.nombre_promocion as promocion_nombre'
             )
             ->whereNull('alumnos.deleted_at')
             ->where('alumnos.domain_id', $dominio)
@@ -62,17 +66,17 @@ class AlumnoController extends Controller
                 'email' => 'required|email|max:255',
                 'contraseña' => 'required|string|min:6' // Aseguramos que se envíe la contraseña
             ]);
-    
+
             $promocion = Promocion::find($request->input('promocion_id'));
-    
+
             if (!$promocion) {
                 return response()->json(['message' => 'Promoción no encontrada'], 400);
             }
-    
+
             // Procesar imágenes en base64 si están presentes
             $fotoPerfil = $request->input('fotoPerfil') ? $request->input('fotoPerfil') : null;
             $fotoCarnet = $request->input('fotoCarnet') ? $request->input('fotoCarnet') : null;
-    
+
             // Crear el alumno
             $alumno = [
                 "codigo" => $request->input('codigo'),
@@ -91,10 +95,10 @@ class AlumnoController extends Controller
                 "foto_perfil" => $fotoPerfil,
                 "foto_carnet" => $fotoCarnet
             ];
-    
+
             // Insertar el alumno en la base de datos y obtener el ID del alumno
             $alumnoId = DB::table('alumnos')->insertGetId($alumno);
-    
+
             // Crear el usuario correspondiente en la tabla 'users'
             DB::table('users')->insert([
                 'alumno_id' => $alumnoId, // Relacionamos el usuario con el ID del alumno
@@ -108,15 +112,15 @@ class AlumnoController extends Controller
                 'updated_at' => Carbon::now(),
                 'rol_id' => 12
             ]);
-    
+
             // Ahora obtenemos todos los cursos de la carrera seleccionada
             $carreraId = $request->input('carreraId');
             $domainId = $request->input('domain_id');
-            
+
             $cursos = DB::table('cursos')
                 ->where('carrera_id', $carreraId)
                 ->get();
-    
+
             // Insertamos los cursos en la tabla `curso_alumno`
             foreach ($cursos as $curso) {
                 DB::table('curso_alumno')->insert([
@@ -127,9 +131,9 @@ class AlumnoController extends Controller
                     'updated_at' => Carbon::now()
                 ]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json(['alumno_id' => $alumnoId, 'message' => 'Alumno y usuario creados correctamente, y asignado a los cursos de la carrera.'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -156,16 +160,16 @@ class AlumnoController extends Controller
             'promocion_id' => 'required|integer',
             'estadoAlumno' => 'required|string|in:EN PROCESO,RETIRADO' // Validación del estadoAlumno
         ]);
-    
+
         $alumno = Alumno::where('id', $id)
             ->where('domain_id', $domain_id)
             ->first();
-    
+
         if ($alumno) {
             // Procesar las imágenes si están presentes
             $fotoPerfil = $request->input('fotoPerfil') ? $request->input('fotoPerfil') : $alumno->foto_perfil;
             $fotoCarnet = $request->input('fotoCarnet') ? $request->input('fotoCarnet') : $alumno->foto_carnet;
-    
+
             // Actualizar los datos del alumno, incluyendo estadoAlumno
             $alumno->update([
                 "codigo" => $request->input('codigo'),
@@ -184,13 +188,13 @@ class AlumnoController extends Controller
                 "foto_carnet" => $fotoCarnet,
                 "estadoAlumno" => $request->input('estadoAlumno'),  // Asegúrate de tener esta línea
             ]);
-    
+
             return response()->json($alumno, 200);
         }
-    
+
         return response()->json(['message' => 'Alumno no encontrado'], 404);
     }
-    
+
 
 
     // Eliminar un alumno
@@ -218,34 +222,39 @@ class AlumnoController extends Controller
     }
 
     // Obtener el alumno logueado
-    public function getLoggedAlumno($alumno_id, $dominio)
-    {
-        $alumno = Alumno::leftJoin('ciclos', 'ciclos.id', '=', 'alumnos.ciclo_id')
-            ->leftJoin('carreras', 'carreras.id', '=', 'alumnos.carrera_id')
-            ->leftJoin('domains', 'domains.id', '=', 'alumnos.domain_id')
-            ->select(
-                'alumnos.*',
-                'ciclos.nombre as ciclo_nombre',
-                'carreras.nombres as carrera_nombre',
-                'domains.nombre as institucion'
-            )
-            ->where('alumnos.id', $alumno_id)
-            ->where('alumnos.domain_id', $dominio)
-            ->whereNull('alumnos.deleted_at')
-            ->first();
+public function getLoggedAlumno($alumno_id, $dominio)
+{
+    $alumno = Alumno::leftJoin('ciclos', 'ciclos.id', '=', 'alumnos.ciclo_id')
+        ->leftJoin('carreras', 'carreras.id', '=', 'alumnos.carrera_id')
+        ->leftJoin('domains', 'domains.id', '=', 'alumnos.domain_id')
+        ->leftJoin('plan_de_estudios', 'plan_de_estudios.id', '=', 'alumnos.estado_id') // Join para obtener el nombre del estado
+        ->leftJoin('promociones', 'promociones.id', '=', 'alumnos.promocion_id') // Join para obtener el nombre de la promoción
+        ->select(
+            'alumnos.*',
+            'ciclos.nombre as ciclo_nombre',
+            'carreras.nombres as carrera_nombre',
+            'domains.nombre as institucion',
+            'plan_de_estudios.nombre as estado_nombre', // Selecciona el nombre del estado
+            'promociones.nombre_promocion as promocion_nombre' // Selecciona el nombre de la promoción
+        )
+        ->where('alumnos.id', $alumno_id)
+        ->where('alumnos.domain_id', $dominio)
+        ->whereNull('alumnos.deleted_at')
+        ->first();
 
-        if ($alumno) {
-            // Convertir imágenes a base64 si existen
-            if ($alumno->foto_perfil) {
-                $alumno->foto_perfil = 'data:image/jpeg;base64,' . $alumno->foto_perfil;
-            }
-            if ($alumno->foto_carnet) {
-                $alumno->foto_carnet = 'data:image/jpeg;base64,' . $alumno->foto_carnet;
-            }
-
-            return response()->json($alumno);
+    if ($alumno) {
+        // Convertir imágenes a base64 si existen
+        if ($alumno->foto_perfil) {
+            $alumno->foto_perfil = 'data:image/jpeg;base64,' . $alumno->foto_perfil;
+        }
+        if ($alumno->foto_carnet) {
+            $alumno->foto_carnet = 'data:image/jpeg;base64,' . $alumno->foto_carnet;
         }
 
-        return response()->json('Alumno no encontrado', 404);
+        return response()->json($alumno);
     }
+
+    return response()->json('Alumno no encontrado', 404);
+}
+
 }
