@@ -29,7 +29,6 @@ class ProyectosController extends Controller
         // Validar los datos de entrada
         $this->validate($request, [
             'estado' => 'required|string|max:20',
-            'codigo' => 'required|string|max:50|unique:proyectos,codigo',
             'nombre' => 'required|string|max:191',
         ]);
 
@@ -60,7 +59,6 @@ class ProyectosController extends Controller
         // Validar los datos de entrada
         $this->validate($request, [
             'estado' => 'required|string|max:20',
-            'codigo' => 'required|string|max:50|unique:proyectos,codigo,' . $id,
             'nombre' => 'required|string|max:191',
         ]);
 
