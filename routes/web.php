@@ -389,7 +389,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
     // Rutas para tareas de proyectos
     $router->get('proyectos/{proyectoId}/tareas', 'ProyectosController@listarTareas'); // Listar tareas de un proyecto específico
-    $router->post('proyectos/{proyectoId}/tareas', 'ProyectosController@añadirTarea'); // Añadir una tarea a un proyecto
+    $router->post('proyectos/{proyectoId}/tareas', 'ProyectosController@anadirTarea'); // Añadir una tarea a un proyecto
     $router->put('proyectos/{proyectoId}/tareas/{tareaId}', 'ProyectosController@actualizarTarea'); // Actualizar una tarea de un proyecto
     $router->delete('proyectos/{proyectoId}/tareas/{tareaId}', 'ProyectosController@eliminarTarea'); // Eliminar una tarea de un proyecto
 });
