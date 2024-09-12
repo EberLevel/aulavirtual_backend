@@ -29,7 +29,6 @@ class GrupoDeEvaluaciones extends Model
     {
         return $this->belongsTo(Curso::class);
     }
-
     /**
      * Relación con el modelo User para el campo deleted_by.
      */

@@ -22,7 +22,8 @@ class Evaluaciones extends Model
         'estado_id',
         'domain_id',
         'deleted_at',
-        'grupo_de_evaluaciones_id'
+        'grupo_de_evaluaciones_id',
+        'modalidad'
     ];
 
     // Define relationships if needed
@@ -39,5 +40,10 @@ class Evaluaciones extends Model
     public function grupoDeEvaluaciones()
     {
         return $this->belongsTo(GrupoDeEvaluaciones::class);
+    }
+    
+    public function grupoDeEvaluacion()
+    {
+        return $this->belongsTo(GrupoDeEvaluaciones::class, 'grupo_de_evaluaciones_id');
     }
 }
