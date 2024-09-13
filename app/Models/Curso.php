@@ -40,7 +40,11 @@ class Curso extends Model
     {
         return $this->belongsTo(Parametro::class, 'area_de_formacion_id', 'nu_id_parametro');
     }
-
+    public function alumnos()
+    {
+        return $this->belongsToMany(Alumno::class, 'curso_alumno', 'curso_id', 'alumno_id');
+    }
+    
     // Definir la relación con el modelo Carrera
     public function carrera()
     {

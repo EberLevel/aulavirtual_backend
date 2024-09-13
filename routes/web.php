@@ -189,6 +189,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->delete('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@destroy');
     
     $router->get('evaluacion/{id}', 'EvaluacionesController@getEvaluacionById');
+    
     $router->put('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
 
 
@@ -357,7 +358,9 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('pregunta-alumno', 'PreguntaAlumnoController@actualizarEstado');
     $router->get('suma-calificaciones', 'PreguntaAlumnoController@obtenerSumaCalificaciones');
 
-
+    //ObteberAlumnoPorEvaluacion
+    $router->get('evaluacionesByalumnos/{id}', 'EvaluacionesByModalidadController@obtenerAlumnosPorEvaluacion');
+    $router->post('evaluacionesByalumnos/guardarNotas', 'EvaluacionesByModalidadController@guardarNotas');
 
 
     Route::get('cursos/{curso_id}/evaluaciones', 'PreguntaAlumnoController@obtenerCursosConEvaluaciones');

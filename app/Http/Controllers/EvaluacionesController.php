@@ -27,10 +27,6 @@ class EvaluacionesController extends Controller
     
         return response()->json($evaluaciones);
     }
-    
-    
-
-    
     public function getEvaluacionById($id)
     {
         // Buscar la evaluación por su ID
@@ -42,7 +38,8 @@ class EvaluacionesController extends Controller
             'observaciones',
             'estado_id',
             'domain_id',
-            'grupo_de_evaluaciones_id'
+            'grupo_de_evaluaciones_id',
+            'modalidad'
         )
         ->where('id', $id)
         ->first();
@@ -60,12 +57,13 @@ class EvaluacionesController extends Controller
         // Validar los datos recibidos
         $validatedData = $this->validate($request, [
             'nombre' => 'required|string|max:255',
-            'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro', // Si aún usas t_g_parametros para el tipo de evaluación
+            'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro', // Si aún usas t_g_parametros para el tipo de evaluación
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required|exists:estados,id', // Cambiado para validar contra la tabla `estados`
             'domain_id' => 'required|integer',
             'grupo_de_evaluaciones_id' => 'required|integer',
+            'modalidad' => 'required|in:0,1',
         ]);
     
         // Buscar la evaluación por su ID
@@ -94,12 +92,13 @@ class EvaluacionesController extends Controller
     {
         $validatedData =$this->validate($request, [
             'nombre' => 'required|string|max:255',
-            'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro',
+            'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro',
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required',
             'domain_id' => 'required|integer',
             'grupo_de_evaluaciones_id' => 'required|integer',
+            'modalidad' => 'required|in:0,1'
         ]);
         $validatedData['fecha_y_hora_programo'] = Carbon::parse($validatedData['fecha_y_hora_programo'])->format('Y-m-d H:i:s');
 
@@ -129,12 +128,13 @@ class EvaluacionesController extends Controller
     {
         $validatedData = $this->validate($request, [
             'nombre' => 'required|string|max:255',
-            'tipo_evaluacion_id' => 'required|exists:t_g_parametros,nu_id_parametro',
+            'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro',
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required',
             'domain_id' => 'required|integer',
             'grupo_de_evaluaciones_id' => 'required|integer',
+            'modalidad' => 'required|in:0,1'
         ]);
 
         $Evaluaciones->update($validatedData);
@@ -150,7 +150,7 @@ class EvaluacionesController extends Controller
     public function destroy($id)
     {
         $grupo = Evaluaciones::withTrashed()->findOrFail($id);
-        $grupo->delete();
+        $grupo->forceDelete();
     
         return response()->json(['message' => 'Curso eliminado exitosamente'], 201);
     }
