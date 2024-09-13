@@ -101,10 +101,12 @@ class ProyectosController extends Controller
             return response()->json(['message' => 'Proyecto no encontrado'], 404);
         }
 
-        $tareas = $proyecto->tareas()->paginate(10);
+        // Ordenar las tareas por el campo 'prioridad' de manera ascendente
+        $tareas = $proyecto->tareas()->orderBy('prioridad', 'asc')->paginate(10);
 
         return response()->json(['data' => $tareas], 200);
     }
+
 
     // Añadir una tarea a un proyecto
     public function anadirTarea(Request $request, $proyectoId)
@@ -115,6 +117,8 @@ class ProyectosController extends Controller
             'estado' => 'required|string|max:20',
             'grupo' => 'nullable|string|max:50',
             'responsable' => 'nullable|string|max:50',
+            'archivos' => 'array',  // Validar que archivos es un arreglo
+            'archivos.*' => 'required|string',  // Cada elemento del array archivos debe ser un string
         ]);
 
         $proyecto = Proyecto::find($proyectoId);
@@ -126,11 +130,22 @@ class ProyectosController extends Controller
         $tarea = new ProyectoTarea(array_merge($request->all(), ['proyecto_id' => $proyecto->id]));
         $tarea->save();
 
+        // Guardar los archivos en la tabla proyecto_tarea_archivos
+        if ($request->has('archivos')) {
+            foreach ($request->input('archivos') as $contenido) {
+                $tarea->archivos()->create([
+                    'contenido' => $contenido,  // Guardar el string base64 directamente
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Tarea añadida correctamente al proyecto',
             'data' => $tarea,
+            'proyecto' => $proyecto->id
         ], 201);
     }
+
 
     // Actualizar una tarea de un proyecto
     public function actualizarTarea(Request $request, $proyectoId, $tareaId)
@@ -141,6 +156,8 @@ class ProyectosController extends Controller
             'estado' => 'sometimes|required|string|max:20',
             'grupo' => 'nullable|string|max:50',
             'responsable' => 'nullable|string|max:50',
+            'archivos' => 'array',  // Validar que archivos es un arreglo
+            'archivos.*' => 'required|string',  // Cada archivo debe ser un string base64
         ]);
 
         $proyecto = Proyecto::find($proyectoId);
@@ -158,11 +175,24 @@ class ProyectosController extends Controller
         // Actualizar la tarea con los datos proporcionados
         $tarea->update($request->all());
 
+        // Eliminar todos los archivos existentes de la tarea
+        $tarea->archivos()->delete();
+
+        // Guardar los nuevos archivos en la tabla proyecto_tarea_archivos
+        if ($request->has('archivos')) {
+            foreach ($request->input('archivos') as $contenido) {
+                $tarea->archivos()->create([
+                    'contenido' => $contenido,  // Guardar el string base64 directamente
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Tarea actualizada correctamente',
             'data' => $tarea,
         ], 200);
     }
+
 
     // Eliminar una tarea de un proyecto
     public function eliminarTarea($proyectoId, $tareaId)
@@ -184,4 +214,26 @@ class ProyectosController extends Controller
 
         return response()->json(['message' => 'Tarea eliminada correctamente'], 204);
     }
+
+    // Mostrar una tarea específica por ID junto con sus archivos
+    public function mostrarTarea($proyectoId, $tareaId)
+    {
+        $proyecto = Proyecto::find($proyectoId);
+
+        if (!$proyecto) {
+            return response()->json(['message' => 'Proyecto no encontrado'], 404);
+        }
+
+        // Buscar la tarea específica dentro del proyecto
+        $tarea = ProyectoTarea::where('proyecto_id', $proyecto->id)
+            ->with('archivos')  // Cargar los archivos relacionados
+            ->find($tareaId);
+
+        if (!$tarea) {
+            return response()->json(['message' => 'Tarea no encontrada'], 404);
+        }
+
+        return response()->json(['data' => $tarea], 200);
+    }
+
 }

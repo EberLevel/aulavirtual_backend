@@ -16,11 +16,17 @@ class ProyectoTarea extends Model
         'prioridad',
         'estado',
         'grupo',
-        'responsable'
+        'responsable',
+        'proyecto_id'
     ];
 
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');
+    }
+
+    public function archivos()
+    {
+        return $this->hasMany(ProyectoTareaArchivo::class, 'proyecto_tarea_id');
     }
 }
