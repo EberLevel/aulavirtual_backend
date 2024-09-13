@@ -150,7 +150,7 @@ class EvaluacionesController extends Controller
     public function destroy($id)
     {
         $grupo = Evaluaciones::withTrashed()->findOrFail($id);
-        $grupo->delete();
+        $grupo->forceDelete();
     
         return response()->json(['message' => 'Curso eliminado exitosamente'], 201);
     }
