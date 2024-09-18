@@ -112,7 +112,7 @@ class ProyectosController extends Controller
     public function anadirTarea(Request $request, $proyectoId)
     {
         $this->validate($request, [
-            'nombre' => 'required|string|max:191',
+            'nombre' => 'sometimes|string|max:191',
             'prioridad' => 'required|string|max:20',
             'estado' => 'required|string|max:20',
             'grupo' => 'nullable|string|max:50',
@@ -152,7 +152,7 @@ class ProyectosController extends Controller
     public function actualizarTarea(Request $request, $proyectoId, $tareaId)
     {
         $this->validate($request, [
-            'nombre' => 'sometimes|required|string|max:191',
+            'nombre' => 'sometimes|string|max:191',
             'prioridad' => 'sometimes|required|string|max:20',
             'estado' => 'sometimes|required|string|max:20',
             'grupo' => 'nullable|string|max:50',

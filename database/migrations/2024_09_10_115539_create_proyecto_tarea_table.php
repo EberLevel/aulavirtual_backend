@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('proyecto_tarea', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); // Campo de nombre
+            $table->string('nombre')->nullable(); // Campo de nombre
             $table->string('prioridad'); // Campo de prioridad
             $table->string('estado'); // Campo de estado
             $table->string('grupo')->nullable(); // Campo de grupo, puede ser nulo
