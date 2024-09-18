@@ -17,6 +17,7 @@ class ProyectoTarea extends Model
         'estado',
         'grupo',
         'responsable',
+        'descripcion',
         'proyecto_id'
     ];
 

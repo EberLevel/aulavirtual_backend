@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('proyecto_tarea', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); // Campo de nombre
+            $table->string('nombre')->nullable(); // Campo de nombre
             $table->string('prioridad'); // Campo de prioridad
             $table->string('estado'); // Campo de estado
             $table->string('grupo')->nullable(); // Campo de grupo, puede ser nulo
             $table->string('responsable')->nullable(); // Campo de responsable, puede ser nulo
+            $table->longText('descripcion')->nullable();
             $table->unsignedBigInteger('proyecto_id')->nullable()->index(); // Clave foránea a proyectos
             $table->timestamps(); // Campos de timestamp para created_at y updated_at
 
