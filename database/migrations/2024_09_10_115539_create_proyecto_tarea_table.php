@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('estado'); // Campo de estado
             $table->string('grupo')->nullable(); // Campo de grupo, puede ser nulo
             $table->string('responsable')->nullable(); // Campo de responsable, puede ser nulo
+            $table->longText('descripcion')->nullable();
             $table->unsignedBigInteger('proyecto_id')->nullable()->index(); // Clave foránea a proyectos
             $table->timestamps(); // Campos de timestamp para created_at y updated_at
 

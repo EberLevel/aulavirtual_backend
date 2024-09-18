@@ -117,6 +117,7 @@ class ProyectosController extends Controller
             'estado' => 'required|string|max:20',
             'grupo' => 'nullable|string|max:50',
             'responsable' => 'nullable|string|max:50',
+            'decripcion' => 'nulable|string',
             'archivos' => 'array',  // Validar que archivos es un arreglo
             'archivos.*' => 'required|string',  // Cada elemento del array archivos debe ser un string
         ]);
@@ -156,6 +157,7 @@ class ProyectosController extends Controller
             'estado' => 'sometimes|required|string|max:20',
             'grupo' => 'nullable|string|max:50',
             'responsable' => 'nullable|string|max:50',
+            'decripcion' => 'nulable|string',
             'archivos' => 'array',  // Validar que archivos es un arreglo
             'archivos.*' => 'required|string',  // Cada archivo debe ser un string base64
         ]);
