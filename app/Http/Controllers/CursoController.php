@@ -11,25 +11,25 @@ class CursoController extends Controller
     public function index($id)
     {
         $courses = Curso::leftJoin('t_g_parametros as ciclo', 'ciclo.nu_id_parametro', '=', 'cursos.ciclo_id')
-        ->leftJoin('t_g_parametros as modulo_formativo', 'modulo_formativo.nu_id_parametro', '=', 'cursos.modulo_formativo_id')
-        ->leftJoin('t_g_parametros as area_de_formacion', 'area_de_formacion.nu_id_parametro', '=', 'cursos.area_de_formacion_id')
-        ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
-        ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
-        ->leftJoin('docentes', 'docentes.id', '=', 'cursos.docente_id')
-        ->where('cursos.carrera_id', $id)
-        ->select(
-            'cursos.*',
-            'ciclo.tx_item_description as ciclo_nombre',
-            'modulo_formativo.tx_item_description as modulo_formativo_nombre',
-            'area_de_formacion.tx_item_description as area_de_formacion_nombre',
-            'carreras.nombres as carrera_nombre',
-            'estado.tx_item_description as estado_nombre',
-            'docentes.id as docente_id',
-            'docentes.nombres as docente_nombre'
-        )
-        ->get();
+            ->leftJoin('t_g_parametros as modulo_formativo', 'modulo_formativo.nu_id_parametro', '=', 'cursos.modulo_formativo_id')
+            ->leftJoin('t_g_parametros as area_de_formacion', 'area_de_formacion.nu_id_parametro', '=', 'cursos.area_de_formacion_id')
+            ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
+            ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
+            ->leftJoin('docentes', 'docentes.id', '=', 'cursos.docente_id')
+            ->where('cursos.carrera_id', $id)
+            ->select(
+                'cursos.*',
+                'ciclo.tx_item_description as ciclo_nombre',
+                'modulo_formativo.tx_item_description as modulo_formativo_nombre',
+                'area_de_formacion.tx_item_description as area_de_formacion_nombre',
+                'carreras.nombres as carrera_nombre',
+                'estado.tx_item_description as estado_nombre',
+                'docentes.id as docente_id',
+                'docentes.nombres as docente_nombre'
+            )
+            ->get();
 
-    return response()->json($courses);
+        return response()->json($courses);
     }
     public function getCursosByAlumno($alumnoId)
     {
@@ -51,36 +51,37 @@ class CursoController extends Controller
                 'docentes.id as docente_id'
             )
             ->get();
-    
+
         return response()->json($courses);
     }
 
     public function getCursosByDomain($domainId)
-{
-    $courses = Curso::leftJoin('t_g_parametros as ciclo', 'ciclo.nu_id_parametro', '=', 'cursos.ciclo_id')
-        ->leftJoin('t_g_parametros as modulo_formativo', 'modulo_formativo.nu_id_parametro', '=', 'cursos.modulo_formativo_id')
-        ->leftJoin('t_g_parametros as area_de_formacion', 'area_de_formacion.nu_id_parametro', '=', 'cursos.area_de_formacion_id')
-        ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
-        ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
-        ->leftJoin('docentes', 'docentes.id', '=', 'cursos.docente_id')
-        ->where('cursos.domain_id', $domainId)
-        ->select(
-            'cursos.*',
-            'ciclo.tx_item_description as ciclo_nombre',
-            'modulo_formativo.tx_item_description as modulo_formativo_nombre',
-            'area_de_formacion.tx_item_description as area_de_formacion_nombre',
-            'carreras.nombres as carrera_nombre',
-            'estado.tx_item_description as estado_nombre',
-            'docentes.id as docente_id',
-            'docentes.nombres as docente_nombre'
-        )
-        ->get();
+    {
+        $courses = Curso::leftJoin('t_g_parametros as ciclo', 'ciclo.nu_id_parametro', '=', 'cursos.ciclo_id')
+            ->leftJoin('t_g_parametros as modulo_formativo', 'modulo_formativo.nu_id_parametro', '=', 'cursos.modulo_formativo_id')
+            ->leftJoin('t_g_parametros as area_de_formacion', 'area_de_formacion.nu_id_parametro', '=', 'cursos.area_de_formacion_id')
+            ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
+            ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
+            ->leftJoin('docentes', 'docentes.id', '=', 'cursos.docente_id')
+            ->where('cursos.domain_id', $domainId)
+            ->select(
+                'cursos.*',
+                'ciclo.tx_item_description as ciclo_nombre',
+                'modulo_formativo.tx_item_description as modulo_formativo_nombre',
+                'area_de_formacion.tx_item_description as area_de_formacion_nombre',
+                'carreras.nombres as carrera_nombre',
+                'estado.tx_item_description as estado_nombre',
+                'docentes.id as docente_id',
+                'docentes.nombres as docente_nombre'
+            )
+            ->get();
 
-    return response()->json($courses);
-}
+        return response()->json($courses);
+    }
 
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $this->validate($request, [
             'codigo' => 'required|string|max:255',
             'nombreCurso' => 'required|string|max:255',
@@ -95,6 +96,7 @@ class CursoController extends Controller
             'tema' => 'required|string',
             'estadoId' => 'required|integer',
             'domain_id' => 'required',
+            // 'asignacionDocentesId' => 'required', // Elimina esta línea para que no sea requerido
         ]);
 
         $curso = Curso::create([
@@ -111,16 +113,17 @@ class CursoController extends Controller
             'tema' => $request->tema,
             'estado_id' => $request->estadoId,
             'domain_id' => $request->domain_id,
-            'docente_id' => $request->asignacionDocentesId,
+            'docente_id' => is_array($request->asignacionDocentesId) ? null : $request->asignacionDocentesId,
         ]);
 
         return response()->json($curso, 201);
     }
 
+
     public function show($id)
     {
         $course = Curso::find($id);
-        if(!$course){
+        if (!$course) {
             return response()->json(['Error' => 'Curso no encontrado'], 404);
         }
 
@@ -129,8 +132,8 @@ class CursoController extends Controller
 
     public function getSyllabus($id)
     {
-        $course = Curso::find($id,['id','syllabus']);
-        if(!$course){
+        $course = Curso::find($id, ['id', 'syllabus']);
+        if (!$course) {
             return response()->json(['Error' => 'Curso no encontrado'], 404);
         }
 
@@ -139,8 +142,8 @@ class CursoController extends Controller
 
     public function getTema($id)
     {
-        $course = Curso::find($id,['id','tema']);
-        if(!$course){
+        $course = Curso::find($id, ['id', 'tema']);
+        if (!$course) {
             return response()->json(['Error' => 'Curso no encontrado'], 404);
         }
 
@@ -189,21 +192,21 @@ class CursoController extends Controller
     public function destroy($id)
     {
         // Busca el curso por su ID
-    $curso = Curso::find($id);
+        $curso = Curso::find($id);
 
-    // Verifica si el curso existe
-    if (!$curso) {
+        // Verifica si el curso existe
+        if (!$curso) {
+            return response()->json([
+                'message' => 'Curso no encontrado'
+            ], 404);
+        }
+
+        // Elimina el curso
+        $curso->delete();
+
+        // Devuelve una respuesta de éxito
         return response()->json([
-            'message' => 'Curso no encontrado'
-        ], 404);
-    }
-
-    // Elimina el curso
-    $curso->delete();
-
-    // Devuelve una respuesta de éxito
-    return response()->json([
-        'message' => 'Curso eliminado exitosamente'
-    ], 200);
+            'message' => 'Curso eliminado exitosamente'
+        ], 200);
     }
 }
