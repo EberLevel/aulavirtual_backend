@@ -102,7 +102,7 @@ class ProyectosController extends Controller
         }
 
         // Ordenar las tareas por el campo 'prioridad' de manera ascendente
-        $tareas = $proyecto->tareas()->orderBy('prioridad', 'asc')->paginate(10);
+        $tareas = $proyecto->tareas()->orderBy('prioridad', 'asc');
 
         return response()->json(['data' => $tareas], 200);
     }
