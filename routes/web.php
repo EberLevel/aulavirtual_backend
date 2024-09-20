@@ -217,6 +217,9 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('evaluaciones/{id}', 'EvaluacionesController@index');
     $router->put('evaluaciones/{id}', 'EvaluacionesController@update');
     $router->delete('evaluaciones/{id}', 'EvaluacionesController@destroy');
+    $router->get('evaluaciones/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getNotasPorAlumnoYGrupo');
+    $router->get('evaluacionesByAlumno/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getPromedioPorAlumnoYGrupo');
+
     //calendarios routes
     $router->post('calendario/alumno', 'CalendarioController@getAlumnoCalendario');
     $router->post('calendario/docente', 'CalendarioController@getDocenteCalendario');

@@ -189,6 +189,7 @@ class CursoController extends Controller
         return response()->json($curso, 200);
     }
     
+    
 
     public function destroy($id)
     {
