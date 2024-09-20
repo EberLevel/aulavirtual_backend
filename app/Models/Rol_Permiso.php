@@ -10,6 +10,11 @@ class Rol_Permiso extends Model
     protected $table="rol_permiso";
 
     protected $fillable = [
-        'idrol','idpermiso'
+        'idrol','idpermiso', 'proyecto_id'
     ];
+
+    public function proyecto()
+    {
+        return $this->belongsTo(Proyecto::class, 'proyecto_id');
+    }
 }
