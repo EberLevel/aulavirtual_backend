@@ -81,7 +81,9 @@ class RolController extends Controller
     if ($idPermisos) {
         $data = [];
         foreach ($idPermisos as $idpermiso) {
-            $data[] = ['idrol' => $idRol, 'idpermiso' => $idpermiso, 'domain_id' => $idDomain];
+            if ($idpermiso['permiso_id'] !== null) {
+                 $data[] = ['idrol' => $idRol, 'idpermiso' => $idpermiso['permiso_id'], 'domain_id' => $idDomain, 'proyecto_id' => $idpermiso['proyecto_id']];
+            }
         }
             DB::table('rol_permiso')->insert($data);
     }
@@ -95,7 +97,7 @@ class RolController extends Controller
             $rol = DB::table('permiso')
             ->join('rol_permiso', 'permiso.id', '=', 'rol_permiso.idpermiso')
             ->where('rol_permiso.idrol', $id)
-            ->select('permiso.id', 'permiso.nombre')
+            ->select('permiso.id', 'permiso.nombre', 'rol_permiso.proyecto_id')
             ->get();
             return response()->json($rol);
         }
@@ -103,7 +105,7 @@ class RolController extends Controller
             ->join('rol_permiso', 'permiso.id', '=', 'rol_permiso.idpermiso')
             ->where('rol_permiso.idrol', $id)
             ->where('rol_permiso.domain_id', $domain_id)
-            ->select('permiso.id', 'permiso.nombre')
+            ->select('permiso.id', 'permiso.nombre', 'rol_permiso.proyecto_id')
             ->get();
             //filter permiso with id 1
             
