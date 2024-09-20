@@ -64,19 +64,19 @@ class AlumnoController extends Controller
                 'domain_id' => 'required|integer',
                 'estadoId' => 'required|integer',
                 'email' => 'required|email|max:255',
-                'contraseña' => 'required|string|min:6' // Aseguramos que se envíe la contraseña
+                'contraseña' => 'required|string|min:6'
             ]);
-
+    
             $promocion = Promocion::find($request->input('promocion_id'));
-
+    
             if (!$promocion) {
                 return response()->json(['message' => 'Promoción no encontrada'], 400);
             }
-
+    
             // Procesar imágenes en base64 si están presentes
-            $fotoPerfil = $request->input('fotoPerfil') ? $request->input('fotoPerfil') : null;
-            $fotoCarnet = $request->input('fotoCarnet') ? $request->input('fotoCarnet') : null;
-
+            $fotoPerfil = $request->input('fotoPerfil');
+            $fotoCarnet = $request->input('fotoCarnet');
+    
             // Crear el alumno
             $alumno = [
                 "codigo" => $request->input('codigo'),
@@ -92,36 +92,34 @@ class AlumnoController extends Controller
                 "domain_id" => $request->input('domain_id'),
                 "promocion_id" => $promocion->id,
                 "estado_id" => $request->input('estadoId'),
-                "foto_perfil" => $fotoPerfil,
-                "foto_carnet" => $fotoCarnet
+                "foto_perfil" => $fotoPerfil ?? null, // Maneja null si no se envía
+                "foto_carnet" => $fotoCarnet ?? null  // Maneja null si no se envía
             ];
-
+    
             // Insertar el alumno en la base de datos y obtener el ID del alumno
             $alumnoId = DB::table('alumnos')->insertGetId($alumno);
-
+    
             // Crear el usuario correspondiente en la tabla 'users'
             DB::table('users')->insert([
-                'alumno_id' => $alumnoId, // Relacionamos el usuario con el ID del alumno
+                'alumno_id' => $alumnoId,
                 'name' => $request->input('nombres'),
                 'lastname' => $request->input('apellidos'),
                 'email' => $request->input('email'),
                 'dni' => $request->input('numeroDocumento'),
                 'domain_id' => $request->input('domain_id'),
-                'password' => Hash::make($request->input('contraseña')), // Hasheamos la contraseña
+                'password' => Hash::make($request->input('contraseña')),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
                 'rol_id' => 12
             ]);
-
-            // Ahora obtenemos todos los cursos de la carrera seleccionada
+    
+            // Obtener cursos de la carrera seleccionada
             $carreraId = $request->input('carreraId');
             $domainId = $request->input('domain_id');
-
-            $cursos = DB::table('cursos')
-                ->where('carrera_id', $carreraId)
-                ->get();
-
-            // Insertamos los cursos en la tabla `curso_alumno`
+    
+            $cursos = DB::table('cursos')->where('carrera_id', $carreraId)->get();
+    
+            // Insertar los cursos en la tabla `curso_alumno`
             foreach ($cursos as $curso) {
                 DB::table('curso_alumno')->insert([
                     'curso_id' => $curso->id,
@@ -131,15 +129,16 @@ class AlumnoController extends Controller
                     'updated_at' => Carbon::now()
                 ]);
             }
-
+    
             DB::commit();
-
+    
             return response()->json(['alumno_id' => $alumnoId, 'message' => 'Alumno y usuario creados correctamente, y asignado a los cursos de la carrera.'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    
 
 
     // Actualizar un alumno existente

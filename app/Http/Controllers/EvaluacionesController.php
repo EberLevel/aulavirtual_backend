@@ -224,4 +224,32 @@ class EvaluacionesController extends Controller
             ], 500);
         }
     }
+
+    public function getEvaluacionesPorGrupo($grupoId, $alumnoId)
+{
+    try {
+        $evaluaciones = DB::table('evaluaciones_alumno as ea')
+            ->join('evaluaciones as e', 'ea.evaluacion_id', '=', 'e.id')
+            ->where('e.grupo_de_evaluaciones_id', $grupoId)
+            ->where('ea.alumno_id', $alumnoId)
+            ->select(
+                'ea.nota',
+                'e.nombre',
+                'e.porcentaje_asignado',
+                DB::raw('(ea.nota * e.porcentaje_asignado / 100) as nota_porcentual')  // Aquí calculamos la nota porcentual
+            )
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'evaluaciones' => $evaluaciones,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las evaluaciones: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
 }
