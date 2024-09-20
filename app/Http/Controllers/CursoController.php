@@ -152,7 +152,6 @@ class CursoController extends Controller
 
     public function update(Request $request, $id)
     {
-
         $this->validate($request, [
             'codigo' => 'required|string|max:255',
             'nombreCurso' => 'required|string|max:255',
@@ -168,7 +167,7 @@ class CursoController extends Controller
             'estadoId' => 'required|integer',
             'domain_id' => 'required',
         ]);
-
+    
         $curso = Curso::findOrFail($id);
         $curso->update([
             'codigo' => $request->codigo,
@@ -184,10 +183,13 @@ class CursoController extends Controller
             'tema' => $request->tema,
             'estado_id' => $request->estadoId,
             'domain_id' => $request->domain_id,
+            'docente_id' => is_array($request->asignacionDocentesId) ? null : $request->asignacionDocentesId, // Verifica si es null
         ]);
-
+    
         return response()->json($curso, 200);
     }
+    
+    
 
     public function destroy($id)
     {

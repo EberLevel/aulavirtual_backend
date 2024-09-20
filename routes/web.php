@@ -188,9 +188,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@update');
     $router->delete('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@destroy');
     
-    $router->get('evaluacion/{id}', 'EvaluacionesController@getEvaluacionById');
-    
-    $router->put('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
+
 
 
     $router->get('alumnos/logged/{alumno_id}/{dominio}', 'AlumnoController@getLoggedAlumno');
@@ -217,6 +215,12 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('evaluaciones/{id}', 'EvaluacionesController@index');
     $router->put('evaluaciones/{id}', 'EvaluacionesController@update');
     $router->delete('evaluaciones/{id}', 'EvaluacionesController@destroy');
+    $router->get('evaluaciones/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getNotasPorAlumnoYGrupo');
+    $router->get('evaluacionesByAlumno/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getPromedioPorAlumnoYGrupo');
+    $router->get('evaluacion/{id}', 'EvaluacionesController@getEvaluacionById');
+    $router->put('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
+
+    
     //calendarios routes
     $router->post('calendario/alumno', 'CalendarioController@getAlumnoCalendario');
     $router->post('calendario/docente', 'CalendarioController@getDocenteCalendario');
