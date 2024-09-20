@@ -16,6 +16,7 @@ class Evaluaciones extends Model
         'nombre',
         'tipo_evaluacion_id',
         'porcentaje_evaluacion',
+        'porcentaje_asignado', 
         'fecha_y_hora_programo',
         'fecha_y_hora_realizo',
         'observaciones',

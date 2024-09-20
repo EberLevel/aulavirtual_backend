@@ -22,13 +22,14 @@ class EvaluacionesController extends Controller
             ->whereNull('evaluaciones.deleted_at')
             ->select(
                 'evaluaciones.*',
-                'estados.nombre as estado_nombre', // Obteniendo el nombre del estado desde la tabla `estados`
+                'estados.nombre as estado_nombre',
                 'tipo_evaluacion.tx_item_description as tipo_evaluacion_nombre'
             )
             ->get();
-
+    
         return response()->json($evaluaciones);
     }
+    
     public function getEvaluacionById($id)
     {
         // Buscar la evaluación por su ID
@@ -40,6 +41,7 @@ class EvaluacionesController extends Controller
             'observaciones',
             'estado_id',
             'domain_id',
+            'porcentaje_asignado',
             'grupo_de_evaluaciones_id',
             'modalidad'
         )
@@ -54,34 +56,33 @@ class EvaluacionesController extends Controller
         // Devolver los datos de la evaluación
         return response()->json($evaluacion);
     }
+
     public function updateEvaluacionById(Request $request, $id)
     {
-        // Validar los datos recibidos
         $validatedData = $this->validate($request, [
             'nombre' => 'required|string|max:255',
-            'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro', // Si aún usas t_g_parametros para el tipo de evaluación
+            'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro',
+            'porcentaje_evaluacion' => 'nullable|numeric',
+            'porcentaje_asignado' => 'nullable|numeric', // Validamos el nuevo campo
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
-            'estado_id' => 'required|exists:estados,id', // Cambiado para validar contra la tabla `estados`
+            'estado_id' => 'required|exists:estados,id',
             'domain_id' => 'required|integer',
             'grupo_de_evaluaciones_id' => 'required|integer',
             'modalidad' => 'required|in:0,1',
         ]);
-
-        // Buscar la evaluación por su ID
+    
         $evaluacion = Evaluaciones::find($id);
-
-        // Verificar si la evaluación existe
+    
         if (!$evaluacion) {
             return response()->json(['message' => 'Evaluación no encontrada'], 404);
         }
-
-        // Actualizar la evaluación con los datos validados
+    
         $evaluacion->update($validatedData);
-
-        // Devolver la evaluación actualizada
+    
         return response()->json($evaluacion);
     }
+    
 
 
     /**
@@ -95,6 +96,8 @@ class EvaluacionesController extends Controller
         $validatedData = $this->validate($request, [
             'nombre' => 'required|string|max:255',
             'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro',
+            'porcentaje_evaluacion' => 'nullable|numeric',
+            'porcentaje_asignado' => 'nullable|numeric', // Validamos el nuevo campo
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required',
@@ -102,11 +105,13 @@ class EvaluacionesController extends Controller
             'grupo_de_evaluaciones_id' => 'required|integer',
             'modalidad' => 'required|in:0,1'
         ]);
+    
         $validatedData['fecha_y_hora_programo'] = Carbon::parse($validatedData['fecha_y_hora_programo'])->format('Y-m-d H:i:s');
-
+    
         $evaluacion = Evaluaciones::create($validatedData);
         return response()->json($evaluacion, 201);
-    }
+    }    
+
 
     /**
      * Display the specified resource.
@@ -134,6 +139,7 @@ class EvaluacionesController extends Controller
             'fecha_y_hora_programo' => 'required|date',
             'observaciones' => 'nullable|string',
             'estado_id' => 'required',
+            'porcentaje_asignado' => 'nullable|numeric',
             'domain_id' => 'required|integer',
             'grupo_de_evaluaciones_id' => 'required|integer',
             'modalidad' => 'required|in:0,1'
@@ -171,6 +177,7 @@ class EvaluacionesController extends Controller
                     'ea.nota',
                     'e.id as evaluacion_id',
                     'e.nombre',
+                    'e.porcentaje_asignado',
                     'e.porcentaje_evaluacion',
                     'e.fecha_y_hora_programo',
                     'e.fecha_y_hora_realizo',
