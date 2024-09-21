@@ -394,10 +394,17 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('proyectos/{id}', 'ProyectosController@update'); // Actualizar un proyecto
     $router->delete('proyectos/{id}', 'ProyectosController@destroy'); // Eliminar un proyecto
 
+    //Rutar para modulos de proyectos
+    $router->get('proyectos/{proyectoId}/modulos', 'ProyectosController@listarModulos'); // Listar modulos de un proyecto específico
+    $router->post('proyectos/{proyectoId}/modulos', 'ProyectosController@anadirModulo'); // Añadir un modulo a un proyecto
+    $router->get('proyectos/{proyectoId}/modulos/{moduloId}', 'ProyectosController@mostrarModulo');
+    $router->put('proyectos/{proyectoId}/modulos/{moduloId}', 'ProyectosController@actualizarModulo'); // Actualizar una tarea de un proyecto
+    $router->delete('proyectos/{proyectoId}/modulos/{moduloId}', 'ProyectosController@eliminarModulo'); // Eliminar una tarea de un proyecto
+
     // Rutas para tareas de proyectos
-    $router->get('proyectos/{proyectoId}/tareas', 'ProyectosController@listarTareas'); // Listar tareas de un proyecto específico
-    $router->post('proyectos/{proyectoId}/tareas', 'ProyectosController@anadirTarea'); // Añadir una tarea a un proyecto
-    $router->put('proyectos/{proyectoId}/tareas/{tareaId}', 'ProyectosController@actualizarTarea'); // Actualizar una tarea de un proyecto
-    $router->delete('proyectos/{proyectoId}/tareas/{tareaId}', 'ProyectosController@eliminarTarea'); // Eliminar una tarea de un proyecto
-    $router->get('proyectos/{proyectoId}/tareas/{tareaId}', 'ProyectosController@mostrarTarea'); // leer una tarea
+    $router->get('proyectos/{proyectoId}/modulos/{moduloId}/tareas', 'ProyectosController@listarTareas'); // Listar tareas de un proyecto específico
+    $router->get('proyectos/{proyectoId}/modulos/{moduloId}/tareas/{tareaId}', 'ProyectosController@mostrarTarea'); // leer una tarea
+    $router->post('proyectos/{proyectoId}/modulos/{moduloId}/tareas', 'ProyectosController@anadirTarea'); // Añadir una tarea a un proyecto
+    $router->put('proyectos/{proyectoId}/modulos/{moduloId}/tareas/{tareaId}', 'ProyectosController@actualizarTarea'); // Actualizar una tarea de un proyecto
+    $router->delete('proyectos/{proyectoId}/modulos/{moduloId}/tareas/{tareaId}', 'ProyectosController@eliminarTarea'); // Eliminar una tarea de un proyecto
 });

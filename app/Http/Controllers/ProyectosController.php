@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Proyecto;
+use App\Models\ProyectoModulo;
 use App\Models\ProyectoTarea;
 use Illuminate\Http\Request;
 
@@ -92,8 +93,8 @@ class ProyectosController extends Controller
         return response()->json(['message' => 'Proyecto eliminado correctamente'], 204);
     }
 
-    // Listar las tareas de un proyecto específico
-    public function listarTareas($proyectoId)
+    // listar modulos de un proyecto
+    public function listarModulos($proyectoId)
     {
         $proyecto = Proyecto::find($proyectoId);
 
@@ -102,14 +103,56 @@ class ProyectosController extends Controller
         }
 
         // Ordenar las tareas por el campo 'prioridad' de manera ascendente
-        $tareas = $proyecto->tareas()->orderBy('prioridad', 'asc')->get();
+        $modulos = $proyecto->modulos()->orderBy('prioridad', 'asc')->get();
+
+        return response()->json(['data' => $modulos], 200);
+    }
+
+    public function anadirModulo(Request $request, $proyectoId)
+    {
+        $this->validate($request, [
+            'nombre' => 'sometimes|string|max:191',
+            'prioridad' => 'required|string|max:20',
+            'estado' => 'required|string|max:20',
+            'grupo' => 'nullable|string|max:50',
+            'responsable' => 'nullable|string|max:50',
+            'decripcion' => 'nulable|string'
+        ]);
+
+        $proyecto = Proyecto::find($proyectoId);
+
+        if (!$proyecto) {
+            return response()->json(['message' => 'Proyecto no encontrado'], 404);
+        }
+
+        $tarea = new ProyectoModulo(array_merge($request->all(), ['proyecto_id' => $proyecto->id]));
+        $tarea->save();
+
+        return response()->json([
+            'message' => 'Módulo añadido correctamente al proyecto',
+            'data' => $tarea,
+            'proyecto' => $proyecto->id
+        ], 201);
+    }
+
+    // Listar las tareas de un proyecto específico
+    public function listarTareas($proyectoId, $moduloId)
+    {
+        $modulo = ProyectoModulo::find($moduloId);
+
+        if (!$modulo) {
+            return response()->json(['message' => 'Modulo no encontrado'], 404);
+        }
+
+        // Ordenar las tareas por el campo 'prioridad' de manera ascendente
+        $tareas = $modulo->tareas()->orderBy('prioridad', 'asc')->get();
 
         return response()->json(['data' => $tareas], 200);
     }
 
 
     // Añadir una tarea a un proyecto
-    public function anadirTarea(Request $request, $proyectoId)
+    public function anadirTarea(Request $request, $proyectoId, $moduloId)
     {
         $this->validate($request, [
             'nombre' => 'sometimes|string|max:191',
@@ -122,13 +165,13 @@ class ProyectosController extends Controller
             'archivos.*' => 'required|string',  // Cada elemento del array archivos debe ser un string
         ]);
 
-        $proyecto = Proyecto::find($proyectoId);
+        $modulo = ProyectoModulo::find($moduloId);
 
-        if (!$proyecto) {
+        if (!$modulo) {
             return response()->json(['message' => 'Proyecto no encontrado'], 404);
         }
 
-        $tarea = new ProyectoTarea(array_merge($request->all(), ['proyecto_id' => $proyecto->id]));
+        $tarea = new ProyectoTarea(array_merge($request->all(), ['proyecto_modulo_id' => $modulo->id]));
         $tarea->save();
 
         // Guardar los archivos en la tabla proyecto_tarea_archivos
@@ -141,15 +184,15 @@ class ProyectosController extends Controller
         }
 
         return response()->json([
-            'message' => 'Tarea añadida correctamente al proyecto',
+            'message' => 'Tarea añadida correctamente al modulo',
             'data' => $tarea,
-            'proyecto' => $proyecto->id
+            'mdoulo' => $modulo->id
         ], 201);
     }
 
 
     // Actualizar una tarea de un proyecto
-    public function actualizarTarea(Request $request, $proyectoId, $tareaId)
+    public function actualizarTarea(Request $request, $proyectoId, $moduloId, $tareaId)
     {
         $this->validate($request, [
             'nombre' => 'sometimes|string|max:191',
@@ -162,13 +205,13 @@ class ProyectosController extends Controller
             'archivos.*' => 'required|string',  // Cada archivo debe ser un string base64
         ]);
 
-        $proyecto = Proyecto::find($proyectoId);
+        $modulo = ProyectoModulo::find($moduloId);
 
-        if (!$proyecto) {
-            return response()->json(['message' => 'Proyecto no encontrado'], 404);
+        if (!$modulo) {
+            return response()->json(['message' => 'Modulo no encontrado'], 404);
         }
 
-        $tarea = ProyectoTarea::where('proyecto_id', $proyecto->id)->find($tareaId);
+        $tarea = ProyectoTarea::where('proyecto_modulo_id', $modulo->id)->find($tareaId);
 
         if (!$tarea) {
             return response()->json(['message' => 'Tarea no encontrada'], 404);
@@ -195,17 +238,49 @@ class ProyectosController extends Controller
         ], 200);
     }
 
-
-    // Eliminar una tarea de un proyecto
-    public function eliminarTarea($proyectoId, $tareaId)
+    public function actualizarModulo(Request $request, $proyectoId, $moduloId)
     {
+        $this->validate($request, [
+            'nombre' => 'sometimes|string|max:191',
+            'prioridad' => 'sometimes|required|string|max:20',
+            'estado' => 'sometimes|required|string|max:20',
+            'grupo' => 'nullable|string|max:50',
+            'responsable' => 'nullable|string|max:50',
+            'decripcion' => 'nulable|string'
+        ]);
+
         $proyecto = Proyecto::find($proyectoId);
 
         if (!$proyecto) {
             return response()->json(['message' => 'Proyecto no encontrado'], 404);
         }
 
-        $tarea = ProyectoTarea::where('proyecto_id', $proyecto->id)->find($tareaId);
+        $modulo = ProyectoModulo::where('proyecto_id', $proyecto->id)->find($moduloId);
+
+        if (!$modulo) {
+            return response()->json(['message' => 'Modulo no encontrado'], 404);
+        }
+
+        // Actualizar la tarea con los datos proporcionados
+        $modulo->update($request->all());
+
+        return response()->json([
+            'message' => 'Modulo actualizada correctamente',
+            'data' => $modulo,
+        ], 200);
+    }
+
+
+    // Eliminar una tarea de un proyecto
+    public function eliminarTarea($proyectoId, $moduloId, $tareaId)
+    {
+        $modulo = ProyectoModulo::find($moduloId);
+
+        if (!$modulo) {
+            return response()->json(['message' => 'Modulo no encontrado'], 404);
+        }
+
+        $tarea = ProyectoTarea::where('proyecto_modulo_id', $modulo->id)->find($tareaId);
 
         if (!$tarea) {
             return response()->json(['message' => 'Tarea no encontrada'], 404);
@@ -217,8 +292,7 @@ class ProyectosController extends Controller
         return response()->json(['message' => 'Tarea eliminada correctamente'], 204);
     }
 
-    // Mostrar una tarea específica por ID junto con sus archivos
-    public function mostrarTarea($proyectoId, $tareaId)
+    public function eliminarModulo($proyectoId, $moduloId)
     {
         $proyecto = Proyecto::find($proyectoId);
 
@@ -226,8 +300,29 @@ class ProyectosController extends Controller
             return response()->json(['message' => 'Proyecto no encontrado'], 404);
         }
 
+        $modulo = ProyectoModulo::where('proyecto_id', $proyecto->id)->find($moduloId);
+
+        if (!$modulo) {
+            return response()->json(['message' => 'Modulo no encontrada'], 404);
+        }
+
+        // Eliminar la tarea
+        $modulo->delete();
+
+        return response()->json(['message' => 'Tarea eliminada correctamente'], 204);
+    }
+
+    // Mostrar una tarea específica por ID junto con sus archivos
+    public function mostrarTarea($proyectoId, $moduloId, $tareaId)
+    {
+        $modulo = ProyectoModulo::find($moduloId);
+
+        if (!$modulo) {
+            return response()->json(['message' => 'Proyecto no encontrado'], 404);
+        }
+
         // Buscar la tarea específica dentro del proyecto
-        $tarea = ProyectoTarea::where('proyecto_id', $proyecto->id)
+        $tarea = ProyectoTarea::where('proyecto_modulo_id', $modulo->id)
             ->with('archivos')  // Cargar los archivos relacionados
             ->find($tareaId);
 
@@ -236,6 +331,25 @@ class ProyectosController extends Controller
         }
 
         return response()->json(['data' => $tarea], 200);
+    }
+
+    public function mostrarModulo($proyectoId, $moduloId)
+    {
+        $proyecto = Proyecto::find($proyectoId);
+
+        if (!$proyecto) {
+            return response()->json(['message' => 'Proyecto no encontrado'], 404);
+        }
+
+        // Buscar la tarea específica dentro del proyecto
+        $modulo = ProyectoModulo::where('proyecto_id', $proyecto->id)
+            ->find($moduloId);
+
+        if (!$modulo) {
+            return response()->json(['message' => 'Modulo no encontrado'], 404);
+        }
+
+        return response()->json(['data' => $modulo], 200);
     }
 
 }
