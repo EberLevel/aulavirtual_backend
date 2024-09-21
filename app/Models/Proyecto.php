@@ -22,8 +22,8 @@ class Proyecto extends Model
         return $this->belongsTo(Domains::class, 'domain_id');
     }
 
-    public function tareas()
+    public function modulos()
     {
-        return $this->hasMany(ProyectoTarea::class, 'proyecto_id');
+        return $this->hasMany(ProyectoModulo::class, 'proyecto_id');
     }
 }

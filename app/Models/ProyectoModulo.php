@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProyectoTarea extends Model
+class ProyectoModulo extends Model
 {
     use HasFactory;
     
-    protected $table = 'proyecto_tarea';
+    protected $table = 'proyecto_modulo';
 
     protected $fillable = [
         'nombre', 
@@ -18,16 +18,16 @@ class ProyectoTarea extends Model
         'grupo',
         'responsable',
         'descripcion',
-        'proyecto_modulo_id'
+        'proyecto_id'
     ];
 
-    public function modulo()
+    public function proyecto()
     {
-        return $this->belongsTo(ProyectoModulo::class, 'proyecto_modulo_id');
+        return $this->belongsTo(Proyecto::class, 'proyecto_id');
     }
 
-    public function archivos()
+    public function tareas()
     {
-        return $this->hasMany(ProyectoTareaArchivo::class, 'proyecto_tarea_id');
+        return $this->hasMany(ProyectoTarea::class, 'proyecto_modulo_id');
     }
 }
