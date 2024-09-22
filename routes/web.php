@@ -210,6 +210,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('asistencia-curso', 'AsistenciaCursoController@show');
     $router->post('asistencia-curso-marcar', 'AsistenciaCursoController@store');
     $router->get('get-fechas-curso-horario', 'AsistenciaCursoController@getFechasCursoHorario');
+    
     //evaluacion routes
     $router->post('evaluaciones', 'EvaluacionesController@store');
     $router->get('evaluaciones/{id}', 'EvaluacionesController@index');
@@ -219,6 +220,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('evaluacionesByAlumno/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getPromedioPorAlumnoYGrupo');
     $router->get('evaluacion/{id}', 'EvaluacionesController@getEvaluacionById');
     $router->put('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
+    $router->get('evaluacionesBygrupo/grupo/{grupoId}/{alumnoId}', 'EvaluacionesController@getEvaluacionesPorGrupo');
 
     
     //calendarios routes
