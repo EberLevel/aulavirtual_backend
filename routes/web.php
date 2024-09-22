@@ -210,6 +210,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('asistencia-curso', 'AsistenciaCursoController@show');
     $router->post('asistencia-curso-marcar', 'AsistenciaCursoController@store');
     $router->get('get-fechas-curso-horario', 'AsistenciaCursoController@getFechasCursoHorario');
+    
     //evaluacion routes
     $router->post('evaluaciones', 'EvaluacionesController@store');
     $router->get('evaluaciones/{id}', 'EvaluacionesController@index');
