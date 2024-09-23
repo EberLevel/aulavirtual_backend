@@ -12,6 +12,7 @@ class ParticipanteController extends Controller
         $participantes = DB::table('alumnos as a')
             ->select(
                 'a.codigo',
+                'a.estadoAlumno',
                 'a.id',
                 'ca.id as curso_alumno_id',
                 DB::raw("concat(a.nombres, ' ', a.apellidos) as nombres"),
@@ -56,4 +57,22 @@ class ParticipanteController extends Controller
             ]);
         }
     }
+
+        // Método para obtener la suma de las notas de un alumno en un curso
+        public function getSumaNotas($curso_id, $alumno_id)
+        {
+            $sumaNotas = DB::table('evaluaciones_alumno as ea')
+                ->join('evaluaciones as e', 'ea.evaluacion_id', '=', 'e.id')
+                ->join('grupo_de_evaluaciones as ge', 'e.grupo_de_evaluaciones_id', '=', 'ge.id')
+                ->join('cursos as c', 'ge.curso_id', '=', 'c.id')
+                ->where('c.id', $curso_id)
+                ->where('ea.alumno_id', $alumno_id)
+                ->sum('ea.nota');
+    
+            return response()->json([
+                'curso_id' => $curso_id,
+                'alumno_id' => $alumno_id,
+                'suma_notas' => $sumaNotas
+            ]);
+        }
 }
