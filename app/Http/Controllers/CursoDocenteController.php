@@ -12,20 +12,20 @@ class CursoDocenteController extends Controller
     public function index($docente_id)
     {
         try {
-            $courses = Curso::leftJoin('t_g_parametros as ciclo', 'ciclo.nu_id_parametro', '=', 'cursos.ciclo_id')
-                ->leftJoin('t_g_parametros as modulo_formativo', 'modulo_formativo.nu_id_parametro', '=', 'cursos.modulo_formativo_id')
-                ->leftJoin('t_g_parametros as area_de_formacion', 'area_de_formacion.nu_id_parametro', '=', 'cursos.area_de_formacion_id')
-                ->leftJoin('t_g_parametros as estado', 'estado.nu_id_parametro', '=', 'cursos.estado_id')
+            $courses = Curso::leftJoin('ciclos', 'ciclos.id', '=', 'cursos.ciclo_id')  // Reemplaza t_g_parametros con ciclos
+                ->leftJoin('modulos_formativos', 'modulos_formativos.id', '=', 'cursos.modulo_formativo_id')  // Reemplaza t_g_parametros con modulos_formativos
+                ->leftJoin('area_de_formacion', 'area_de_formacion.id', '=', 'cursos.area_de_formacion_id')  // Reemplaza t_g_parametros con area_de_formacion
+                ->leftJoin('estados', 'estados.id', '=', 'cursos.estado_id')  // Reemplaza t_g_parametros con estados
                 ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
                 ->leftJoin('docentes', 'docentes.id', '=', 'cursos.docente_id')
                 ->where('cursos.docente_id', $docente_id)
                 ->select(
                     'cursos.*',
-                    'ciclo.tx_item_description as ciclo_nombre',
-                    'modulo_formativo.tx_item_description as modulo_formativo_nombre',
-                    'area_de_formacion.tx_item_description as area_de_formacion_nombre',
+                    'ciclos.nombre as ciclo_nombre',  // Obtiene el nombre del ciclo
+                    'modulos_formativos.nombre as modulo_formativo_nombre',  // Obtiene el nombre del módulo formativo
+                    'area_de_formacion.nombre as area_de_formacion_nombre',  // Obtiene el nombre del área de formación
                     'carreras.nombres as carrera_nombre',
-                    'estado.tx_item_description as estado_nombre',  
+                    'estados.nombre as estado_nombre',  // Obtiene el nombre del estado
                     'docentes.id as docente_id'
                 )
                 ->get();

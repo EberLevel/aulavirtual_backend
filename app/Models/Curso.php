@@ -11,6 +11,7 @@ class Curso extends Model
         'codigo',
         'cantidad_de_creditos',
         'cantidad_de_horas',
+        'horas_practicas',
         'porcentaje_de_creditos',
         'ciclo_id',
         'carrera_id',
