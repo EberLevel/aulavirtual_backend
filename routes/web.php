@@ -154,6 +154,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('cursos/{id}/tema', 'CursoController@getTema');
     $router->put('cursos/{id}', 'CursoController@update');
     $router->delete('cursos/{id}', 'CursoController@destroy');
+    $router->get('cursos/carrera/{id}', 'CursoController@index');
 
     $router->get('roles/{domain_id}', 'RolController@index');
     $router->post('rol/guardar', 'RolController@store');
@@ -173,7 +174,6 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('empresas-dropdown', 'EmpresaController@dropdown');
     $router->get('permisos/{domain_id}', 'PermisoController@index');
     $router->post('permiso/guardar', 'PermisoController@store');
-    $router->get('cursos/carrera/{id}', 'CursoController@index');
 
     $router->get('capacitaciones', 'CapacitacionController@index');
     $router->post('capacitaciones', 'CapacitacionController@store');

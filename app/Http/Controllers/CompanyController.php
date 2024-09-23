@@ -19,23 +19,35 @@ class CompanyController extends Controller
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
     }
-    public function store(Request $request)
-    {
-        try {
-            $folderName = 'companies/'.$request->domain_id;
-            $isValid=$this->checkIsValidImage($request->logo);
-            $toInsert = [
-                'name' => $request->nombreInstitucion,
-                
-            ];
-            if($isValid){
-                $toInsert['logo_url']=$this->uploadFile($request->logo,$folderName);
+
+public function store(Request $request)
+{
+    try {
+        $folderName = 'companies/'.$request->domain_id;
+        
+        // Datos que se actualizarán (solo el nombre inicialmente)
+        $toInsert = [
+            'name' => $request->nombreInstitucion,
+        ];
+
+        // Validar si se envió un logo para actualizar
+        if ($request->hasFile('logo')) {
+            $isValid = $this->checkIsValidImage($request->logo);
+            if ($isValid) {
+                // Solo sube el archivo si es válido
+                $toInsert['logo_url'] = $this->uploadFile($request->logo, $folderName);
             }
-            //if exist id in request, update
-            DB::table('companies')->where('domain_id', $request->domain_id)->update($toInsert);
-            return response()->json(['status' => true]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
+
+        // Actualizar los datos en la tabla
+        DB::table('companies')
+            ->where('domain_id', $request->domain_id)
+            ->update($toInsert);
+
+        return response()->json(['status' => true]);
+    } catch (\Exception $e) {
+        return response()->json(['status' => false, 'error' => $e->getMessage()]);
     }
+}
+
 }
