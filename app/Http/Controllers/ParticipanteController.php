@@ -12,6 +12,7 @@ class ParticipanteController extends Controller
         $participantes = DB::table('alumnos as a')
             ->select(
                 'a.codigo',
+                'a.estadoAlumno',
                 'a.id',
                 'ca.id as curso_alumno_id',
                 DB::raw("concat(a.nombres, ' ', a.apellidos) as nombres"),
@@ -55,5 +56,25 @@ class ParticipanteController extends Controller
                 'domain_id' => $domainId
             ]);
         }
+    }
+    public function getPromedioEvaluaciones($curso_id, $alumno_id)
+    {
+        // Realizar la consulta para obtener el promedio general de las evaluaciones agrupadas por grupo de evaluaciones
+        $promedioGeneral = DB::table(DB::raw('(SELECT ge.id AS grupo_id, AVG(ea.nota) AS promedio_notas_por_grupo
+            FROM evaluaciones_alumno ea
+            JOIN evaluaciones e ON ea.evaluacion_id = e.id
+            JOIN grupo_de_evaluaciones ge ON e.grupo_de_evaluaciones_id = ge.id
+            WHERE ea.alumno_id = ? AND ge.curso_id = ?
+            GROUP BY ge.id) AS subquery'))
+            ->select(DB::raw('AVG(subquery.promedio_notas_por_grupo) AS promedio_general'))
+            ->setBindings([$alumno_id, $curso_id])
+            ->first();
+
+        // Devolver el resultado en formato JSON
+        return response()->json([
+            'curso_id' => $curso_id,
+            'alumno_id' => $alumno_id,
+            'promedio_general' => $promedioGeneral->promedio_general
+        ]);
     }
 }
