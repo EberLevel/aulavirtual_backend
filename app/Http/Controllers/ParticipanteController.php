@@ -57,22 +57,24 @@ class ParticipanteController extends Controller
             ]);
         }
     }
+    public function getPromedioEvaluaciones($curso_id, $alumno_id)
+    {
+        // Realizar la consulta para obtener el promedio general de las evaluaciones agrupadas por grupo de evaluaciones
+        $promedioGeneral = DB::table(DB::raw('(SELECT ge.id AS grupo_id, AVG(ea.nota) AS promedio_notas_por_grupo
+            FROM evaluaciones_alumno ea
+            JOIN evaluaciones e ON ea.evaluacion_id = e.id
+            JOIN grupo_de_evaluaciones ge ON e.grupo_de_evaluaciones_id = ge.id
+            WHERE ea.alumno_id = ? AND ge.curso_id = ?
+            GROUP BY ge.id) AS subquery'))
+            ->select(DB::raw('AVG(subquery.promedio_notas_por_grupo) AS promedio_general'))
+            ->setBindings([$alumno_id, $curso_id])
+            ->first();
 
-        // Método para obtener la suma de las notas de un alumno en un curso
-        public function getSumaNotas($curso_id, $alumno_id)
-        {
-            $sumaNotas = DB::table('evaluaciones_alumno as ea')
-                ->join('evaluaciones as e', 'ea.evaluacion_id', '=', 'e.id')
-                ->join('grupo_de_evaluaciones as ge', 'e.grupo_de_evaluaciones_id', '=', 'ge.id')
-                ->join('cursos as c', 'ge.curso_id', '=', 'c.id')
-                ->where('c.id', $curso_id)
-                ->where('ea.alumno_id', $alumno_id)
-                ->sum('ea.nota');
-    
-            return response()->json([
-                'curso_id' => $curso_id,
-                'alumno_id' => $alumno_id,
-                'suma_notas' => $sumaNotas
-            ]);
-        }
+        // Devolver el resultado en formato JSON
+        return response()->json([
+            'curso_id' => $curso_id,
+            'alumno_id' => $alumno_id,
+            'promedio_general' => $promedioGeneral->promedio_general
+        ]);
+    }
 }

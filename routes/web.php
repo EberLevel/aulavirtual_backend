@@ -206,6 +206,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //participantes routes
     $router->get('participantes/{domain_id}/{curso_id}', 'ParticipanteController@show');
     $router->post('participantes', 'ParticipanteController@store');
+    $router->get('evaluacionesByalumnos/promedio/{curso_id}/{alumno_id}', 'ParticipanteController@getPromedioEvaluaciones');
     //asistencia routes
     $router->get('asistencia-curso', 'AsistenciaCursoController@show');
     $router->post('asistencia-curso-marcar', 'AsistenciaCursoController@store');
@@ -367,6 +368,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //ObteberAlumnoPorEvaluacion
     $router->get('evaluacionesByalumnos/{id}', 'EvaluacionesByModalidadController@obtenerAlumnosPorEvaluacion');
     $router->post('evaluacionesByalumnos/guardarNotas', 'EvaluacionesByModalidadController@guardarNotas');
+
 
 
     Route::get('cursos/{curso_id}/evaluaciones', 'PreguntaAlumnoController@obtenerCursosConEvaluaciones');
