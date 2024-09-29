@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CvBank\CvBank;
+use App\Models\Candidato; // Importa el modelo 'Candidato'
+use App\Models\User; // Importa el modelo 'User'
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Http\Controllers\bcrypt;
+use Illuminate\Support\Facades\Hash;
 
-class CvBankController extends Controller
+class CandidatoController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, $domain_id)
     {
-        $cvBanks = CvBank::with('marital_status', 'profession', 'estadoActual', 'education_degree', 'identification_document')
+        $candidatos = Candidato::with('marital_status', 'profession', 'estadoActual', 'education_degree', 'identification_document')
             ->where('domain_id', $domain_id) // Filtrar por domain_id
             ->byTerm($request->term)
             ->byProfessionId($request->profession_id)
@@ -22,11 +22,21 @@ class CvBankController extends Controller
             ->byCurrentStateId($request->current_state_id)
             ->paginate(10);
 
-        return response()->json($cvBanks, 200);
+        return response()->json($candidatos, 200);
     }
 
-
-
+    public function getByCiudad($ciudad_id)
+    {
+        // Buscar candidatos solo por ciudad_id sin incluir relaciones
+        $candidatos = Candidato::where('ciudad_id', $ciudad_id)->paginate(10);
+    
+        if ($candidatos->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron candidatos para la ciudad especificada.'], 404);
+        }
+    
+        return response()->json($candidatos, 200);
+    }
+    
     public function filtersData()
     {
         $data = [
@@ -40,7 +50,7 @@ class CvBankController extends Controller
 
     public function dataCreate($domain_id)
     {
-        $code = $this->generateCodigoConcursante($domain_id);
+        $code = $this->generateCodigoCandidato($domain_id);
         $data = [
             'code' => $code,
             'identification_documents' => \App\Models\DocIdentidad::where('domain_id', $domain_id)->get(),
@@ -52,18 +62,17 @@ class CvBankController extends Controller
             'scales' => \App\Models\Escala::where('domain_id', $domain_id)->get(),
             'actions' => \App\Models\AccionOi::where('domain_id', $domain_id)->get(),
             'training_types' => \App\Models\TipoCapacitacion::where('domain_id', $domain_id)->get(),
-            'ocupacion_actual' => \App\Models\OcupacionActual::where('domain_id', $domain_id)->get(), // Nueva línea para ocupacion_actual
+            'ocupacion_actual' => \App\Models\OcupacionActual::where('domain_id', $domain_id)->get(),
         ];
 
         return response()->json($data, 200);
     }
 
-    private function generateCodigoConcursante($domain_id)
+    private function generateCodigoCandidato($domain_id)
     {
-        $count = \App\Models\CvBank\CvBank::where('domain_id', $domain_id)->count();
-        return 'CNC-' . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
+        $count = Candidato::where('domain_id', $domain_id)->count();
+        return 'CND-' . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -90,17 +99,18 @@ class CvBankController extends Controller
             'date_affiliation' => 'nullable|date',
             'estado_actual_id' => 'nullable|integer',
             'domain_id' => 'required|integer|exists:domains,id',
+            'ciudad_id' => 'required|integer|exists:ciudades,id', // Validación para ciudad_id
             'imagen' => 'nullable|string',
         ]);
     
-        // Crear un nuevo usuario asociado con el postulante
+        // Crear un nuevo usuario asociado con el candidato
         $user = new \App\Models\User([
             'name' => $request->input('names'),
             'email' => $request->input('email'),
             'dni' => $request->input('identification_number'),
-            'password' => \Illuminate\Support\Facades\Hash::make($request->input('password')),
+            'password' => Hash::make($request->input('password')),
             'domain_id' => $request->input('domain_id'),
-            'rol_id' => 21,
+            'rol_id' => 25,
             'type' => 'user',
             'status' => 'active',
         ]);
@@ -108,8 +118,8 @@ class CvBankController extends Controller
         // Guarda el usuario en la base de datos
         $user->save();
     
-        // Ahora crea el registro en la tabla `cv_banks`
-        $cvBank = CvBank::create([
+        // Ahora crea el registro en la tabla `av_candidatos`
+        $candidato = Candidato::create([
             'position_code' => $request->input('position_code'),
             'code' => $request->input('code'),
             'identification_document_id' => $request->input('identification_document_id'),
@@ -128,28 +138,35 @@ class CvBankController extends Controller
             'date_affiliation' => $request->input('date_affiliation'),
             'estado_actual_id' => $request->input('estado_actual_id'),
             'domain_id' => $request->input('domain_id'),
+            'ciudad_id' => $request->input('ciudad_id'), // Incluir ciudad_id
             'user_id' => $user->id, 
             'image' => $request->input('imagen'),
         ]);
     
-        $user->update(['postulante_id' => $cvBank->id]);
+        // Verificar si el candidato fue creado correctamente antes de actualizar el usuario
+        if ($candidato && $candidato->id) {
+            $user->update(['candidato_id' => $candidato->id]);
+        } else {
+            return response()->json(['error' => 'No se pudo crear el candidato.'], 500);
+        }
     
-        return response()->json(['cvBank' => $cvBank], 201);
+        return response()->json(['candidato' => $candidato], 201);
     }
-    
+     
+
     /**
      * Display the specified resource.
      */
     public function show($id)
     {
-        $cvBank = CvBank::findOrFail($id);
-        return response()->json(['cvBank' => $cvBank]);
+        $candidato = Candidato::findOrFail($id);
+        return response()->json(['candidato' => $candidato]);
     }
 
     public function showByUser($id)
     {
-        $cvBank = CvBank::where('user_id', $id)->first();
-        return response()->json(['cvBank' => $cvBank]);
+        $candidato = Candidato::where('user_id', $id)->first();
+        return response()->json(['candidato' => $candidato]);
     }
 
     /**
@@ -171,28 +188,30 @@ class CvBankController extends Controller
             'age' => 'required|integer',
             'education_degree_id' => 'required|integer',
             'profession_id' => 'nullable|integer',
-            'email' => 'nullable|string|max:100'
+            'email' => 'nullable|string|max:100',
+            'ciudad_id' => 'required|integer|exists:ciudades,id', // Validación para ciudad_id
         ]);
-
-        $cvBank = CvBank::findOrFail($id);
-        $cvBank->update($data);
-
-        return response()->json(['message' => 'Banco de CV actualizado correctamente', 'data' => $cvBank], 200);
+    
+        $candidato = Candidato::findOrFail($id);
+        $candidato->update($data);
+    
+        return response()->json(['message' => 'Candidato actualizado correctamente', 'data' => $candidato], 200);
     }
+    
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy($id)
     {
-        $cvBank = CvBank::find($id);
+        $candidato = Candidato::find($id);
 
-        if (!$cvBank) {
-            return response()->json(['message' => 'Banco de CV no encontrado'], 404);
+        if (!$candidato) {
+            return response()->json(['message' => 'Candidato no encontrado'], 404);
         }
 
-        $cvBank->delete();
+        $candidato->delete();
 
-        return response()->json(['message' => 'Banco de CV eliminado correctamente'], 204);
+        return response()->json(['message' => 'Candidato eliminado correctamente'], 204);
     }
 }

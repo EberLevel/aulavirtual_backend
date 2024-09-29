@@ -11,31 +11,47 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $this->validate($request, [
-            'email' => 'required|string|max:255',
             'password' => 'required|string|max:255',
+            'email' => 'nullable|string|max:255', // Opcional, se usa solo si se pasa
+            'dni' => 'nullable|string|max:191' // Opcional, se usa solo si se pasa
         ]);
-
-        // Check if the user is in the database
-        $user = DB::table('users')->where('email', $request->email)->first();
+    
+        if (!$request->has('email') && !$request->has('dni')) {
+            return response()->json(['mensaje' => 'Debe proporcionar un correo electrónico o un DNI para iniciar sesión', 'status' => 422], 200);
+        }
+    
+        $userQuery = DB::table('users');
+        
+        if ($request->has('email')) {
+            $userQuery->where('email', $request->email);
+        } elseif ($request->has('dni')) {
+            $userQuery->where('dni', $request->dni);
+        }
+        
+        $user = $userQuery->first();
+    
+        // Si no se encuentra el usuario, retorna un error
         if (!$user) {
             return response()->json(['mensaje' => 'Usuario no encontrado', 'status' => 404], 200);
         }
-
+    
+        // Verifica la contraseña
         if (Hash::check($request->password, $user->password)) {
-            // Generate API token
+            // Genera un token de API
             $apiToken = Str::random(150);
-
-            // Update user with new API token
+    
+            // Actualiza al usuario con el nuevo token
             DB::table('users')->where('id', $user->id)->update(['api_token' => $apiToken]);
-
-            // Add the API token to the user object
+    
+            // Añade el token al objeto del usuario
             $user->api_token = $apiToken;
-
+    
             return response()->json(['mensaje' => 'Usuario autenticado', 'status' => 200, 'user' => $user], 200);
         } else {
             return response()->json(['mensaje' => 'Contraseña incorrecta', 'status' => 404], 200);
         }
     }
+    
 
     public function logout(Request $request)
     {

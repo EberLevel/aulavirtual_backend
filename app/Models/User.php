@@ -28,6 +28,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'api_token',
         'status',
         'postulante_id',
+        'candidato_id',
         'type'
     ];
 
