@@ -134,7 +134,7 @@ class CandidatoController extends Controller
         $candidato = Candidato::create([
             'position_code' => $request->input('position_code'),
             'code' => $request->input('code'),
-            'identification_document_id' => $request->input('identification_document_id'),
+            'identification_document_id' => $request->input('identification_document_id') ?: null,
             'identification_number' => $request->input('identification_number'),
             'nombre' => $request->input('nombre'),
             'phone' => $request->input('telefono'),
@@ -142,7 +142,7 @@ class CandidatoController extends Controller
             'number_children' => $request->input('number_children'),
             'date_birth' => $request->input('fecha_nacimiento') ?: null,
             'age' => $request->input('age'),
-            'education_degree_id' => $request->input('education_degree_id'),
+            'education_degree_id' => $request->input('education_degree_id')?: null,
             'profesion' => $request->input('profesion'),  // Ahora es un string
             'ocupacion_actual' => $request->input('ocupacion_actual'),  // Ahora es un string
             'email' => $request->input('email'),
@@ -233,7 +233,7 @@ class CandidatoController extends Controller
             'estado_actual' => Arr::get($data, 'estado_actual', null),
             'domain_id' => Arr::get($data, 'domain_id'),
             'ciudad_id' => Arr::get($data, 'ciudad_id'),
-            'imagen' => Arr::get($data, 'imagen', null),
+            'image' => Arr::get($data, 'imagen', null),
         ]);
 
         return response()->json(['message' => 'Candidato actualizado correctamente', 'data' => $candidato], 200);
