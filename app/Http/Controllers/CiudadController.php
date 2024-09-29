@@ -41,7 +41,7 @@ class CiudadController extends Controller
         $this->validate($request, [
             'codigo' => 'required|string|max:50|unique:ciudades,codigo',
             'nombre' => 'required|string|max:191',
-            'estado' => 'required|in:activo,inactivo',
+            'estado' => 'required|in:aprobado,desaprobado,observado,en_evaluacion',
             'observaciones' => 'nullable|string',
             'domain_id' => 'required|integer|exists:domains,id',
         ]);
@@ -75,7 +75,8 @@ class CiudadController extends Controller
         $this->validate($request, [
             'codigo' => 'required|string|max:50|unique:ciudades,codigo,' . $id,
             'nombre' => 'required|string|max:191',
-            'estado' => 'required|in:activo,inactivo',
+            'estado' => 'required|in:aprobado,desaprobado,observado,en_evaluacion',
+
             'observaciones' => 'nullable|string',
             'domain_id' => 'required|integer|exists:domains,id',
         ]);
