@@ -71,25 +71,25 @@ class CvBankController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'position_code' => 'required|string|max:100',
-            'code' => 'required|string|max:100',
-            'identification_document_id' => 'required|integer',
-            'identification_number' => 'required|string|max:100',
-            'names' => 'required|string|max:100',
+            'identification_number' => 'required|string|max:100', // DNI es obligatorio
+            'password' => 'required|string|min:6', // Password es obligatorio
+            'position_code' => 'nullable|string|max:100',
+            'code' => 'nullable|string|max:100',
+            'identification_document_id' => 'nullable|integer',
+            'names' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
-            'marital_status_id' => 'required|integer',
+            'marital_status_id' => 'nullable|integer',
             'number_children' => 'nullable|integer',
-            'date_birth' => 'required|date',
-            'age' => 'required|integer',
-            'education_degree_id' => 'required|integer',
+            'date_birth' => 'nullable|date',
+            'age' => 'nullable|integer',
+            'education_degree_id' => 'nullable|integer',
             'profession_id' => 'nullable|integer',
-            'ocupacion_actual_id' => 'required|nullable|integer', 
+            'ocupacion_actual_id' => 'nullable|integer',
             'email' => 'nullable|string|max:100',
             'sex' => 'nullable|string|max:1',
             'date_affiliation' => 'nullable|date',
             'estado_actual_id' => 'nullable|integer',
             'domain_id' => 'required|integer|exists:domains,id',
-            'password' => 'required|string|min:6',
             'imagen' => 'nullable|string',
         ]);
     
@@ -122,7 +122,7 @@ class CvBankController extends Controller
             'age' => $request->input('age'),
             'education_degree_id' => $request->input('education_degree_id'),
             'profession_id' => $request->input('profession_id'),
-            'ocupacion_actual_id' => $request->input('ocupacion_actual_id'), // Asegúrate de capturar este valor
+            'ocupacion_actual_id' => $request->input('ocupacion_actual_id'),
             'email' => $request->input('email'),
             'sex' => $request->input('sex'),
             'date_affiliation' => $request->input('date_affiliation'),
@@ -137,19 +137,6 @@ class CvBankController extends Controller
         return response()->json(['cvBank' => $cvBank], 201);
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
     /**
      * Display the specified resource.
      */
