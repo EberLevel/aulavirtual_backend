@@ -106,7 +106,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //common routes
     //get carreras dropdown
     $router->get('carreras-dropdown', 'CarreraController@dropdown');
-    
+
     $router->get('carreras-dropdown/{plan_de_estudios_id}', 'CarreraController@dropDown');
 
 
@@ -187,7 +187,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('grupo-de-evaluaciones', 'GrupoDeEvaluacionesController@store');
     $router->put('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@update');
     $router->delete('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@destroy');
-    
+
 
 
 
@@ -211,7 +211,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('asistencia-curso', 'AsistenciaCursoController@show');
     $router->post('asistencia-curso-marcar', 'AsistenciaCursoController@store');
     $router->get('get-fechas-curso-horario', 'AsistenciaCursoController@getFechasCursoHorario');
-    
+
     //evaluacion routes
     $router->post('evaluaciones', 'EvaluacionesController@store');
     $router->get('evaluaciones/{id}', 'EvaluacionesController@index');
@@ -223,7 +223,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
     $router->get('evaluacionesBygrupo/grupo/{grupoId}/{alumnoId}', 'EvaluacionesController@getEvaluacionesPorGrupo');
 
-    
+
     //calendarios routes
     $router->post('calendario/alumno', 'CalendarioController@getAlumnoCalendario');
     $router->post('calendario/docente', 'CalendarioController@getDocenteCalendario');
@@ -411,4 +411,35 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('proyectos/{proyectoId}/modulos/{moduloId}/tareas', 'ProyectosController@anadirTarea'); // Añadir una tarea a un proyecto
     $router->put('proyectos/{proyectoId}/modulos/{moduloId}/tareas/{tareaId}', 'ProyectosController@actualizarTarea'); // Actualizar una tarea de un proyecto
     $router->delete('proyectos/{proyectoId}/modulos/{moduloId}/tareas/{tareaId}', 'ProyectosController@eliminarTarea'); // Eliminar una tarea de un proyecto
+
+    //Candidatos
+    $router->get('candidatos/domain/{domain_id}', 'CandidatoController@index');
+    $router->post('candidatos', 'CandidatoController@store');
+    $router->get('candidatos/{id}', 'CandidatoController@show');
+    $router->get('getCiudadByCandidato/{id}', 'CandidatoController@getCiudadByCandidato');
+    $router->get('candidatos/user/{id}', 'CandidatoController@showByUser');
+    $router->get('candidatos/ciudad/{ciudad_id}', 'CandidatoController@getByCiudad');
+    $router->put('candidatos/{id}', 'CandidatoController@update');
+    $router->delete('candidatos/{id}', 'CandidatoController@destroy');
+    
+    // Rutas adicionales para datos y filtros
+    $router->get('candidatos/filters/data', 'CandidatoController@filtersData');
+    $router->get('candidatos/data/create/{domain_id}', 'CandidatoController@dataCreate');
+    
+    // Ciudades
+    $router->get('ciudades', 'CiudadController@index');
+    $router->post('ciudades', 'CiudadController@store');
+    $router->get('ciudades/{id}', 'CiudadController@show');
+    $router->get('ciudades/domain/{domain_id}', 'CiudadController@listByDomain');
+    $router->put('ciudades/{id}', 'CiudadController@update');
+    $router->delete('ciudades/{id}', 'CiudadController@destroy');
+
+    // Información Académica Candidato
+    $router->get('informacion_academica/domain/{domain_id}', 'InformacionAcademicaCandidatoController@getByDomainId');
+    $router->post('informacion_academica', 'InformacionAcademicaCandidatoController@store');
+    $router->get('informacion_academica/{id}', 'InformacionAcademicaCandidatoController@show');
+    $router->put('informacion_academica/{id}', 'InformacionAcademicaCandidatoController@update');
+    $router->delete('informacion_academica/{id}', 'InformacionAcademicaCandidatoController@destroy');
+    $router->get('informacion_academica/create/{domain_id}', 'InformacionAcademicaCandidatoController@getDataCreate');
+
 });
