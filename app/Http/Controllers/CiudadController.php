@@ -95,7 +95,7 @@ class CiudadController extends Controller
     public function listByDomain($domain_id)
     {
         // Filtrar las ciudades por domain_id
-        $ciudades = Ciudad::where('domain_id', $domain_id)->paginate(10);
+        $ciudades = Ciudad::where('domain_id', $domain_id)->get();
     
         return response()->json($ciudades, 200);
     }
