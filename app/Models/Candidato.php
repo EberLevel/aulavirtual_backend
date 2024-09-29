@@ -19,29 +19,27 @@ class Candidato extends Model
      */
     protected $fillable = [
         'position_code',
-        'user_id',
         'code',
         'identification_document_id',
         'identification_number',
-        'image',
-        'names',
+        'nombre',
         'phone',
         'marital_status_id',
         'number_children',
         'date_birth',
         'age',
         'education_degree_id',
-        'profession_id',
-        'ocupacion_actual_id',
+        'profesion',
+        'ocupacion_actual',
         'email',
-        'urls',
-        'domain_id',
-        'estado_actual_id',
+        'estado_actual',
         'sex',
         'date_affiliation',
-        'ciudad_id'
-    ];
-
+        'domain_id',
+        'ciudad_id',
+        'user_id',
+        'image',
+    ];    
     /**
      * Relación con la tabla `users`.
      */
