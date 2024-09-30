@@ -17,6 +17,7 @@ class Ciudad extends Model
         'nombre',
         'estado',
         'observaciones',
+        'avance',
         'domain_id',
     ];
 
