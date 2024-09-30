@@ -94,9 +94,10 @@ class CandidatoController extends Controller
         $this->validate($request, [
             'identification_number' => 'required|string|max:100',
             'password' => 'required|string|min:6',
-            'position_code' => 'nullable|string|max:100',
             'code' => 'nullable|string|max:100',
             'identification_document_id' => 'nullable|integer',
+            'apaterno' => 'nullable|string|max:100',
+            'amaterno' => 'nullable|string|max:100',
             'nombre' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
             'marital_status_id' => 'nullable|integer',
@@ -112,12 +113,13 @@ class CandidatoController extends Controller
             'estado_actual' => 'nullable|string|max:191',  // Modificado a string
             'domain_id' => 'required|integer|exists:domains,id',
             'ciudad_id' => 'required|integer|exists:ciudades,id',
+            'distrito_id' => 'required|string', 
             'imagen' => 'nullable|string',
         ]);
 
         // Crear un nuevo usuario asociado con el candidato
         $user = new \App\Models\User([
-            'name' => $request->input('nombre'),
+            'name' => $request->input('nombre') . ' ' . $request->input('apaterno') . ' ' . $request->input('amaterno'),
             'email' => $request->input('email'),
             'dni' => $request->input('identification_number'),
             'password' => Hash::make($request->input('password')),
@@ -132,10 +134,11 @@ class CandidatoController extends Controller
 
         // Ahora crea el registro en la tabla `av_candidatos`
         $candidato = Candidato::create([
-            'position_code' => $request->input('position_code'),
             'code' => $request->input('code'),
             'identification_document_id' => $request->input('identification_document_id') ?: null,
             'identification_number' => $request->input('identification_number'),
+            'apaterno' => $request->input('nombre'),
+            'amaterno' => $request->input('nombre'),
             'nombre' => $request->input('nombre'),
             'phone' => $request->input('telefono'),
             'marital_status_id' => $request->input('marital_status_id'),
@@ -151,6 +154,7 @@ class CandidatoController extends Controller
             'estado_actual' => $request->input('estado_actual'),  // Ahora es un string
             'domain_id' => $request->input('domain_id'),
             'ciudad_id' => $request->input('ciudad_id'),
+            'distrito_id' => $request->input('distrito_id'),
             'user_id' => $user->id,
             'image' => $request->input('imagen'),
         ]);

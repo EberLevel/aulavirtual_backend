@@ -18,10 +18,11 @@ class Candidato extends Model
      * @var array
      */
     protected $fillable = [
-        'position_code',
         'code',
         'identification_document_id',
         'identification_number',
+        'apaterno',
+        'amaterno',
         'nombre',
         'phone',
         'marital_status_id',
@@ -39,6 +40,7 @@ class Candidato extends Model
         'ciudad_id',
         'user_id',
         'image',
+        'distrito_id'
     ];    
     /**
      * Relación con la tabla `users`.
