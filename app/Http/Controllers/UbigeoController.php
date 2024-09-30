@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\UbigeoPeruDepartment;
 use App\Models\UbigeoPeruProvince;
 
-class Ubigeo extends Controller
+// use App\Models\UbigeoPeruDepartment;
+// use App\Models\UbigeoPeruProvince;
+
+class UbigeoController extends Controller
 {
     // Obtener todos los departamentos
     public function departamentos()

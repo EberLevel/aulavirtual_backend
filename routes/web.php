@@ -445,7 +445,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('informacion_academica/create/{domain_id}', 'InformacionAcademicaCandidatoController@getDataCreate');
 
     // Ubigeos
-    $router->get('departamentos', 'Ubigeo@departamentos');
-    $router->get('departamentos/{departamento_id/provincias}', 'Ubigeo@provincias');
-    $router->get('departamentos/{departamento_id}/provincias/{provincia_id}/distritos', 'Ubigeo@distritos');
+    $router->get('departamentos', 'UbigeoController@departamentos');
+    $router->get('departamentos/{departamento_id}/provincias', 'UbigeoController@provincias');
+    $router->get('departamentos/{departamento_id}/provincias/{provincia_id}/distritos', 'UbigeoController@distritos');
 });
