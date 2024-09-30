@@ -137,8 +137,8 @@ class CandidatoController extends Controller
             'code' => $request->input('code'),
             'identification_document_id' => $request->input('identification_document_id') ?: null,
             'identification_number' => $request->input('identification_number'),
-            'apaterno' => $request->input('nombre'),
-            'amaterno' => $request->input('nombre'),
+            'apaterno' => $request->input('apaterno'),
+            'amaterno' => $request->input('amaterno'),
             'nombre' => $request->input('nombre'),
             'phone' => $request->input('telefono'),
             'marital_status_id' => $request->input('marital_status_id'),
@@ -196,6 +196,8 @@ class CandidatoController extends Controller
             'position_code' => 'nullable|string|max:100',
             'code' => 'nullable|string|max:100',
             'identification_document_id' => 'nullable|integer',
+            'apaterno' => 'nullable|string|max:100',
+            'amaterno' => 'nullable|string|max:100',            
             'nombre' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
             'marital_status_id' => 'nullable|integer',
@@ -212,6 +214,7 @@ class CandidatoController extends Controller
             'domain_id' => 'required|integer|exists:domains,id',
             'ciudad_id' => 'required|integer|exists:ciudades,id',
             'imagen' => 'nullable|string',
+            'distrito_id' => 'nullable|string',
         ]);
 
         $candidato = Candidato::findOrFail($id);
@@ -222,6 +225,8 @@ class CandidatoController extends Controller
             'code' => Arr::get($data, 'code', null),
             'identification_document_id' => Arr::get($data, 'identification_document_id', null),
             'identification_number' => Arr::get($data, 'identification_number', null),
+            'apaterno' => Arr::get($data, 'apaterno', null),
+            'amaterno' => Arr::get($data, 'amaterno', null),
             'nombre' => Arr::get($data, 'nombre', null),
             'phone' => Arr::get($data, 'telefono', null),
             'marital_status_id' => Arr::get($data, 'marital_status_id', null),
@@ -238,6 +243,7 @@ class CandidatoController extends Controller
             'domain_id' => Arr::get($data, 'domain_id'),
             'ciudad_id' => Arr::get($data, 'ciudad_id'),
             'image' => Arr::get($data, 'imagen', null),
+            'distrito_id' => Arr::get($data, 'distrito_id'),
         ]);
 
         return response()->json(['message' => 'Candidato actualizado correctamente', 'data' => $candidato], 200);
