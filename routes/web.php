@@ -448,4 +448,9 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('departamentos', 'UbigeoController@departamentos');
     $router->get('departamentos/{departamento_id}/provincias', 'UbigeoController@provincias');
     $router->get('departamentos/{departamento_id}/provincias/{provincia_id}/distritos', 'UbigeoController@distritos');
+    // Reuniones
+    $router->get('reuniones', 'ReunionController@index');
+    $router->post('reuniones', 'ReunionController@store');
+    $router->get('reuniones/{id}', 'ReunionController@show');
+    $router->put('reuniones/{id}', 'ReunionController@update');
 });
