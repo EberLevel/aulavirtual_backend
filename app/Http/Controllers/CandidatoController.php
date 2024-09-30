@@ -249,13 +249,21 @@ class CandidatoController extends Controller
     public function destroy($id)
     {
         $candidato = Candidato::find($id);
-
+    
         if (!$candidato) {
             return response()->json(['message' => 'Candidato no encontrado'], 404);
         }
-
+    
+        // Buscar y eliminar el usuario asociado al candidato
+        $user = \App\Models\User::find($candidato->user_id);
+        if ($user) {
+            $user->delete();
+        }
+    
+        // Eliminar el candidato
         $candidato->delete();
-
-        return response()->json(['message' => 'Candidato eliminado correctamente'], 204);
+    
+        return response()->json(['message' => 'Candidato y usuario eliminados correctamente'], 204);
     }
+    
 }
