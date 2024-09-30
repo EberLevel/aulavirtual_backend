@@ -444,4 +444,8 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->delete('informacion_academica/{id}', 'InformacionAcademicaCandidatoController@destroy');
     $router->get('informacion_academica/create/{domain_id}', 'InformacionAcademicaCandidatoController@getDataCreate');
 
+    // Ubigeos
+    $router->get('departamentos', 'Ubigeo@departamentos');
+    $router->get('departamentos/{departamento_id/provincias}', 'Ubigeo@provincias');
+    $router->get('departamentos/{departamento_id}/provincias/{provincia_id}/distritos', 'Ubigeo@distritos');
 });
