@@ -26,7 +26,7 @@ class Candidato extends Model
         'nombre',
         'phone',
         'marital_status_id',
-        'number_children',
+        'puesto',
         'date_birth',
         'age',
         'education_degree_id',

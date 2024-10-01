@@ -453,4 +453,5 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('reuniones', 'ReunionController@store');
     $router->get('reuniones/{id}', 'ReunionController@show');
     $router->put('reuniones/{id}', 'ReunionController@update');
+    $router->post('reuniones/{id}/fotos', 'ReunionController@storeFoto');
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reunion;
+use App\Models\ReunionFoto;
 use App\Models\Rol;
 use Illuminate\Http\Request;
 
@@ -78,6 +79,36 @@ class ReunionController extends Controller
             'message' => 'Reunion actualizada correctamente',
             'data' => $reunion,
         ], 200);
+    }
+
+    public function storeFoto(Request $request, $id)
+    {
+        // Validar la entrada
+        $this->validate($request, [
+            'foto' => 'required|string', // La foto debe ser una cadena base64
+        ]);
+
+        // Buscar la reunión por su ID
+        $reunion = Reunion::find($id);
+
+        // Verificar si la reunión existe
+        if (!$reunion) {
+            return response()->json(['message' => 'Reunión no encontrada'], 404);
+        }
+
+        // Crear una nueva instancia de ReunionFoto
+        $reunionFoto = new ReunionFoto();
+        $reunionFoto->reunion_id = $reunion->id;
+        $reunionFoto->foto = $request->input('foto'); // Aquí recibimos la cadena base64 de la foto
+
+        // Guardar la foto en la base de datos
+        $reunionFoto->save();
+
+        // Retornar una respuesta exitosa
+        return response()->json([
+            'message' => 'Foto guardada exitosamente',
+            'foto' => $reunionFoto,
+        ], 201);
     }
 
 }

@@ -23,4 +23,9 @@ class Reunion extends Model
     {
         return $this->belongsTo(Domains::class, 'domain_id');
     }
+
+    public function fotos()
+    {
+        return $this->hasMany(ReunionFoto::class, 'reunion_id');
+    }
 }

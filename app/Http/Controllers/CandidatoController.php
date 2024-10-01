@@ -101,7 +101,7 @@ class CandidatoController extends Controller
             'nombre' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
             'marital_status_id' => 'nullable|integer',
-            'number_children' => 'nullable|integer',
+            'puesto' => 'nullable|integer',
             'date_birth' => 'nullable|date',
             'age' => 'nullable|integer',
             'education_degree_id' => 'nullable|integer',
@@ -113,7 +113,7 @@ class CandidatoController extends Controller
             'estado_actual' => 'nullable|string|max:191',  // Modificado a string
             'domain_id' => 'required|integer|exists:domains,id',
             'ciudad_id' => 'required|integer|exists:ciudades,id',
-            'distrito_id' => 'required|string', 
+            'distrito_id' => 'nullable|string', 
             'imagen' => 'nullable|string',
         ]);
 
@@ -142,7 +142,7 @@ class CandidatoController extends Controller
             'nombre' => $request->input('nombre'),
             'phone' => $request->input('telefono'),
             'marital_status_id' => $request->input('marital_status_id'),
-            'number_children' => $request->input('number_children'),
+            'puesto' => $request->input('puesto'),
             'date_birth' => $request->input('fecha_nacimiento') ?: null,
             'age' => $request->input('age'),
             'education_degree_id' => $request->input('education_degree_id')?: null,
@@ -201,7 +201,7 @@ class CandidatoController extends Controller
             'nombre' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
             'marital_status_id' => 'nullable|integer',
-            'number_children' => 'nullable|integer',
+            'puesto' => 'nullable|integer',
             'fecha_nacimiento' => 'nullable|date',
             'age' => 'nullable|integer',
             'education_degree_id' => 'nullable|integer',
@@ -230,7 +230,7 @@ class CandidatoController extends Controller
             'nombre' => Arr::get($data, 'nombre', null),
             'phone' => Arr::get($data, 'telefono', null),
             'marital_status_id' => Arr::get($data, 'marital_status_id', null),
-            'number_children' => Arr::get($data, 'number_children', null), // Cambio realizado aquí
+            'puesto' => Arr::get($data, 'puesto', null), // Cambio realizado aquí
             'date_birth' => Arr::get($data, 'fecha_nacimiento', null),
             'age' => Arr::get($data, 'age', null),
             'education_degree_id' => Arr::get($data, 'education_degree_id', null),
