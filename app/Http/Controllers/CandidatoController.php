@@ -92,7 +92,7 @@ class CandidatoController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'identification_number' => 'required|string|max:100',
+            'identification_number' => 'nullable|string|max:100',
             'password' => 'required|string|min:6',
             'code' => 'nullable|string|max:100',
             'identification_document_id' => 'nullable|integer',
@@ -191,7 +191,7 @@ class CandidatoController extends Controller
     {
         // Validación de los datos
         $data = $this->validate($request, [
-            'identification_number' => 'required|string|max:100',
+            'identification_number' => 'nullable|string|max:100',
             'password' => 'required|string|min:6',
             'position_code' => 'nullable|string|max:100',
             'code' => 'nullable|string|max:100',
