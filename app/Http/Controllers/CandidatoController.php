@@ -92,7 +92,7 @@ class CandidatoController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'identification_number' => 'required|string|max:100',
+            'identification_number' => 'nullable|string|max:100',
             'password' => 'required|string|min:6',
             'code' => 'nullable|string|max:100',
             'identification_document_id' => 'nullable|integer',
@@ -175,14 +175,14 @@ class CandidatoController extends Controller
     public function show($id)
     {
         // Buscar el candidato por su ID
-        $candidato = Candidato::with('user')->findOrFail($id);
+        $candidato = Candidato::with(['user','distrito.province', 'distrito.department'])->findOrFail($id);
         
         // Obtener el usuario asociado al candidato
         $user = $candidato->user;
         
-        // Verificar si se encontró el usuario
+        // Verificar si se encontr贸 el usuario
         if ($user) {
-            // Devuelve los datos del candidato y un indicador de que hay una contraseña almacenada
+            // Devuelve los datos del candidato y un indicador de que hay una contrase帽a almacenada
             return response()->json([
                 'candidato' => $candidato,
                 'password_stored' => $user->password ? true : false,
@@ -205,7 +205,7 @@ class CandidatoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validación de los datos
+        // Validaci贸n de los datos
         $data = $this->validate($request, [
             'identification_number' => 'nullable|string|max:100',
             'password' => 'nullable|string|min:6',
@@ -268,7 +268,7 @@ class CandidatoController extends Controller
         
         // Actualizar el modelo `User` asociado si se proporcionan cambios
         if ($user) {
-            // Actualizar la contraseña solo si se proporciona una nueva
+            // Actualizar la contrase帽a solo si se proporciona una nueva
             if (!empty($data['password'])) {
                 $user->password = Hash::make($data['password']);
             }

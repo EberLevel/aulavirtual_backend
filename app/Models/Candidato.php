@@ -164,4 +164,8 @@ class Candidato extends Model
         }
         return $query;
     }
+
+    public function distrito() {
+        return $this->belongsTo(UbigeoPeruDistrict::class, 'distrito_id');
+    }
 }
