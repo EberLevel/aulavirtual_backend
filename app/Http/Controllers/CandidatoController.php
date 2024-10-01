@@ -92,7 +92,7 @@ class CandidatoController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'identification_number' => 'nullable|string|max:100',
+            'identification_number' => 'required|string|max:100',
             'password' => 'required|string|min:6',
             'code' => 'nullable|string|max:100',
             'identification_document_id' => 'nullable|integer',
@@ -112,7 +112,7 @@ class CandidatoController extends Controller
             'date_affiliation' => 'nullable|date',
             'estado_actual' => 'nullable|string|max:191',  // Modificado a string
             'domain_id' => 'required|integer|exists:domains,id',
-            'ciudad_id' => 'required|integer|exists:ciudades,id',
+            'ciudad_id' => 'nullable|integer|exists:ciudades,id',
             'distrito_id' => 'nullable|string', 
             'imagen' => 'nullable|string',
         ]);
@@ -174,10 +174,26 @@ class CandidatoController extends Controller
      */
     public function show($id)
     {
-        $candidato = Candidato::findOrFail($id);
-        return response()->json(['candidato' => $candidato]);
+        // Buscar el candidato por su ID
+        $candidato = Candidato::with('user')->findOrFail($id);
+        
+        // Obtener el usuario asociado al candidato
+        $user = $candidato->user;
+        
+        // Verificar si se encontró el usuario
+        if ($user) {
+            // Devuelve los datos del candidato y un indicador de que hay una contraseña almacenada
+            return response()->json([
+                'candidato' => $candidato,
+                'password_stored' => $user->password ? true : false,
+            ], 200);
+        } else {
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
+        }
     }
-
+    
+   
+    
     public function showByUser($id)
     {
         $candidato = Candidato::where('user_id', $id)->first();
@@ -192,7 +208,7 @@ class CandidatoController extends Controller
         // Validación de los datos
         $data = $this->validate($request, [
             'identification_number' => 'nullable|string|max:100',
-            'password' => 'required|string|min:6',
+            'password' => 'nullable|string|min:6',
             'position_code' => 'nullable|string|max:100',
             'code' => 'nullable|string|max:100',
             'identification_document_id' => 'nullable|integer',
@@ -205,50 +221,70 @@ class CandidatoController extends Controller
             'fecha_nacimiento' => 'nullable|date',
             'age' => 'nullable|integer',
             'education_degree_id' => 'nullable|integer',
-            'profesion' => 'nullable|string|max:191',  // Modificado a string
-            'ocupacion_actual' => 'nullable|string|max:191',  // Modificado a string
+            'profesion' => 'nullable|string|max:191',
+            'ocupacion_actual' => 'nullable|string|max:191',
             'email' => 'nullable|string|max:100',
             'genero' => 'nullable|string|max:1',
             'fecha_afiliacion' => 'nullable|date',
-            'estado_actual' => 'nullable|string|max:191',  // Modificado a string
+            'estado_actual' => 'nullable|string|max:191',
             'domain_id' => 'required|integer|exists:domains,id',
             'ciudad_id' => 'required|integer|exists:ciudades,id',
             'imagen' => 'nullable|string',
             'distrito_id' => 'nullable|string',
         ]);
-
+        
         $candidato = Candidato::findOrFail($id);
-
-        // Actualizar el candidato con los datos proporcionados
-        $candidato->update([
-            'position_code' => Arr::get($data, 'position_code', null),
-            'code' => Arr::get($data, 'code', null),
-            'identification_document_id' => Arr::get($data, 'identification_document_id', null),
-            'identification_number' => Arr::get($data, 'identification_number', null),
-            'apaterno' => Arr::get($data, 'apaterno', null),
-            'amaterno' => Arr::get($data, 'amaterno', null),
-            'nombre' => Arr::get($data, 'nombre', null),
-            'phone' => Arr::get($data, 'telefono', null),
-            'marital_status_id' => Arr::get($data, 'marital_status_id', null),
-            'puesto' => Arr::get($data, 'puesto', null), // Cambio realizado aquí
-            'date_birth' => Arr::get($data, 'fecha_nacimiento', null),
-            'age' => Arr::get($data, 'age', null),
-            'education_degree_id' => Arr::get($data, 'education_degree_id', null),
-            'profesion' => Arr::get($data, 'profesion', null),
-            'ocupacion_actual' => Arr::get($data, 'ocupacion_actual', null),
-            'email' => Arr::get($data, 'email', null),
-            'sex' => Arr::get($data, 'genero', null),
-            'date_affiliation' => Arr::get($data, 'fecha_afiliacion', null),
-            'estado_actual' => Arr::get($data, 'estado_actual', null),
-            'domain_id' => Arr::get($data, 'domain_id'),
-            'ciudad_id' => Arr::get($data, 'ciudad_id'),
-            'image' => Arr::get($data, 'imagen', null),
-            'distrito_id' => Arr::get($data, 'distrito_id'),
-        ]);
-
+        
+        // Obtener los datos actuales del candidato
+        $candidatoData = $candidato->toArray();
+        $user = $candidato->user;
+        
+        // Actualizar solo los campos proporcionados en el modelo `Candidato`
+        $candidato->update(array_filter([
+            'position_code' => $data['position_code'] ?? $candidatoData['position_code'],
+            'code' => $data['code'] ?? $candidatoData['code'],
+            'identification_document_id' => $data['identification_document_id'] ?? $candidatoData['identification_document_id'],
+            'identification_number' => $data['identification_number'] ?? $candidatoData['identification_number'],
+            'apaterno' => $data['apaterno'] ?? $candidatoData['apaterno'],
+            'amaterno' => $data['amaterno'] ?? $candidatoData['amaterno'],
+            'nombre' => $data['nombre'] ?? $candidatoData['nombre'],
+            'phone' => $data['telefono'] ?? $candidatoData['phone'],
+            'marital_status_id' => $data['marital_status_id'] ?? $candidatoData['marital_status_id'],
+            'puesto' => $data['puesto'] ?? $candidatoData['puesto'],
+            'date_birth' => $data['fecha_nacimiento'] ?? $candidatoData['date_birth'],
+            'age' => $data['age'] ?? $candidatoData['age'],
+            'education_degree_id' => $data['education_degree_id'] ?? $candidatoData['education_degree_id'],
+            'profesion' => $data['profesion'] ?? $candidatoData['profesion'],
+            'ocupacion_actual' => $data['ocupacion_actual'] ?? $candidatoData['ocupacion_actual'],
+            'email' => $data['email'] ?? $candidatoData['email'],
+            'sex' => $data['genero'] ?? $candidatoData['sex'],
+            'date_affiliation' => $data['fecha_afiliacion'] ?? $candidatoData['date_affiliation'],
+            'estado_actual' => $data['estado_actual'] ?? $candidatoData['estado_actual'],
+            'domain_id' => $data['domain_id'] ?? $candidatoData['domain_id'],
+            'ciudad_id' => $data['ciudad_id'] ?? $candidatoData['ciudad_id'],
+            'image' => $data['imagen'] ?? $candidatoData['image'],
+            'distrito_id' => $data['distrito_id'] ?? $candidatoData['distrito_id'],
+        ]));
+        
+        // Actualizar el modelo `User` asociado si se proporcionan cambios
+        if ($user) {
+            // Actualizar la contraseña solo si se proporciona una nueva
+            if (!empty($data['password'])) {
+                $user->password = Hash::make($data['password']);
+            }
+            
+            // Actualizar otros campos del usuario si es necesario
+            $user->email = $data['email'] ?? $user->email;
+            $user->name = $data['nombre'] ?? $user->name;
+            
+            // Guardar los cambios en el usuario
+            $user->save();
+        }
+    
         return response()->json(['message' => 'Candidato actualizado correctamente', 'data' => $candidato], 200);
     }
-
+    
+    
     /**
      * Remove the specified resource from storage.
      */
