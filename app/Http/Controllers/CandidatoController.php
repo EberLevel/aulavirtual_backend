@@ -249,10 +249,6 @@ class CandidatoController extends Controller
         return response()->json(['message' => 'Candidato actualizado correctamente', 'data' => $candidato], 200);
     }
 
-
-
-
-
     /**
      * Remove the specified resource from storage.
      */
