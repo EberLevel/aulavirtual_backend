@@ -423,7 +423,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('candidatos/ciudad/{ciudad_id}', 'CandidatoController@getByCiudad');
     $router->put('candidatos/{id}', 'CandidatoController@update');
     $router->delete('candidatos/{id}', 'CandidatoController@destroy');
-    
+    $router->get('candidatos/ciudad/count/{ciudad_id}', 'CandidatoController@countCandidatosByCiudad');
     // Rutas adicionales para datos y filtros
     $router->get('candidatos/filters/data', 'CandidatoController@filtersData');
     $router->get('candidatos/data/create/{domain_id}', 'CandidatoController@dataCreate');
