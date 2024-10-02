@@ -37,18 +37,6 @@ class CandidatoController extends Controller
         return response()->json(['ciudad_id' => $candidato->ciudad_id], 200);
     }
 
-    public function getByCiudad($ciudad_id)
-    {
-        // Buscar candidatos solo por ciudad_id sin incluir relaciones
-        $candidatos = Candidato::where('ciudad_id', $ciudad_id)->paginate(10);
-
-        if ($candidatos->isEmpty()) {
-            return response()->json(['message' => 'No se encontraron candidatos para la ciudad especificada.'], 404);
-        }
-
-        return response()->json($candidatos, 200);
-    }
-
     public function filtersData()
     {
         $data = [
@@ -192,7 +180,27 @@ class CandidatoController extends Controller
         }
     }
     
-   
+    public function getByCiudad($ciudad_id)
+    {
+        // Buscar candidatos solo por ciudad_id sin incluir relaciones
+        $candidatos = Candidato::where('ciudad_id', $ciudad_id)->get();
+
+        if ($candidatos->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron candidatos para la ciudad especificada.'], 404);
+        }
+
+        return response()->json($candidatos, 200);
+    }
+    public function countCandidatosByCiudad($ciudad_id)
+    {
+        // Contar la cantidad de candidatos en la ciudad especificada
+        $cantidadCandidatos = Candidato::where('ciudad_id', $ciudad_id)->count();
+    
+        return response()->json([
+            'ciudad_id' => $ciudad_id,
+            'cantidadCandidatos' => $cantidadCandidatos,
+        ]);
+    }
     
     public function showByUser($id)
     {
