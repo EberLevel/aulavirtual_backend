@@ -183,7 +183,9 @@ class CandidatoController extends Controller
     public function getByCiudad($ciudad_id)
     {
         // Buscar candidatos solo por ciudad_id sin incluir relaciones
-        $candidatos = Candidato::where('ciudad_id', $ciudad_id)->get();
+        $candidatos = Candidato::with(['distrito', 'distrito.province', 'distrito.department'])
+            ->where('ciudad_id', $ciudad_id)
+            ->get();
 
         if ($candidatos->isEmpty()) {
             return response()->json(['message' => 'No se encontraron candidatos para la ciudad especificada.'], 404);
