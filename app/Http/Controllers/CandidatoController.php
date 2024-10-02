@@ -15,16 +15,13 @@ class CandidatoController extends Controller
      */
     public function index(Request $request, $domain_id)
     {
-        $candidatos = Candidato::with('marital_status', 'profession', 'estadoActual', 'education_degree', 'identification_document')
-            ->where('domain_id', $domain_id) // Filtrar por domain_id
-            ->byTerm($request->term)
-            ->byProfessionId($request->profession_id)
-            ->byEducationDegreeId($request->education_degree_id)
-            ->byCurrentStateId($request->current_state_id)
-            ->paginate(10);
-
+        // Obtener todos los candidatos solo filtrando por domain_id
+        $candidatos = Candidato::where('domain_id', $domain_id)->get();
+    
         return response()->json($candidatos, 200);
     }
+    
+
     public function getCiudadByCandidato($id)
     {
         $candidato = Candidato::findOrFail($id); // Buscar el candidato por su ID
