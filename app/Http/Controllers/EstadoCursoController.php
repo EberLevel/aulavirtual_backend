@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\EstadoCurso;
 use App\Models\Carrera;
+use Illuminate\Support\Facades\DB;
 
 // TB Plan de Estudio
 class EstadoCursoController extends Controller
@@ -90,17 +91,28 @@ class EstadoCursoController extends Controller
      */
     public function listarPlanPorCarrera($carrera_id)
     {
-        // Buscar la carrera junto con su plan de estudios
-        $carrera = Carrera::with('planDeEstudios')
-            ->where('id', $carrera_id)
-            ->first();
-
-        // Si no se encuentra la carrera
+        // Verificar si la carrera existe
+        $carrera = Carrera::find($carrera_id);
+    
         if (!$carrera) {
             return response()->json(['mensaje' => 'Carrera no encontrada', 'status' => 404], 404);
         }
-
-        // Retornar el plan de estudios asociado
-        return response()->json($carrera->planDeEstudios);
+    
+        // Realizar la consulta para obtener estado_id y nombre del plan de estudio
+        $planesDeEstudio = DB::table('cursos')
+            ->join('plan_de_estudios', 'cursos.estado_id', '=', 'plan_de_estudios.id')
+            ->select('cursos.estado_id', 'plan_de_estudios.nombre as nombre_plan_de_estudio')
+            ->where('cursos.carrera_id', $carrera_id)
+            ->groupBy('cursos.estado_id', 'plan_de_estudios.nombre')
+            ->get();
+    
+        // Verificar si hay planes de estudio relacionados
+        if ($planesDeEstudio->isEmpty()) {
+            return response()->json(['mensaje' => 'No se encontraron planes de estudio para esta carrera', 'status' => 404], 404);
+        }
+    
+        // Retornar los planes de estudio encontrados
+        return response()->json($planesDeEstudio);
     }
+    
 }
