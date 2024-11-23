@@ -197,6 +197,30 @@ class CursoController extends Controller
         return response()->json($curso, 200);
     }
 
+    public function getAllCursos()
+    {
+        $courses = Curso::leftJoin('ciclos', 'ciclos.id', '=', 'cursos.ciclo_id')
+            ->leftJoin('modulos_formativos', 'modulos_formativos.id', '=', 'cursos.modulo_formativo_id')
+            ->leftJoin('area_de_formacion', 'area_de_formacion.id', '=', 'cursos.area_de_formacion_id')
+            ->leftJoin('estados', 'estados.id', '=', 'cursos.estado_id')
+            ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
+            ->leftJoin('docentes', 'docentes.id', '=', 'cursos.docente_id')
+            ->select(
+                'cursos.*',
+                'ciclos.nombre as ciclo_nombre',
+                'modulos_formativos.nombre as modulo_formativo_nombre',
+                'area_de_formacion.nombre as area_de_formacion_nombre',
+                'carreras.nombres as carrera_nombre',
+                'estados.nombre as estado_nombre',
+                'docentes.id as docente_id',
+                'docentes.nombres as docente_nombre'
+            )
+            ->get();
+    
+        return response()->json($courses);
+    }
+    
+
 
 
     public function destroy($id)
