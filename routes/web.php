@@ -183,6 +183,11 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('capacitaciones-codigo', 'CapacitacionController@generateCode');
     $router->get('capacitaciones-docentes', 'CapacitacionController@listarDocentes');
 
+    // para pagos
+    $router->get('pagos', 'PagoController@index');
+    $router->post('pagos', 'PagoController@store');
+
+
     $router->get('grupo-de-evaluaciones/{curso_id}', 'GrupoDeEvaluacionesController@index');
     $router->post('grupo-de-evaluaciones', 'GrupoDeEvaluacionesController@store');
     $router->put('grupo-de-evaluaciones/{id}', 'GrupoDeEvaluacionesController@update');
