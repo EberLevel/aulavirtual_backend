@@ -137,7 +137,11 @@ class DocenteController extends Controller
                     $imagePath = $imageBase64;
                 }
             }
-            $docenteRol = DB::table('rol')->where('nombre', 'Docente')->first();
+            $docenteRol = DB::table('rol')->where('nombre', 'Docentes')->first();
+            
+            if (!$docenteRol) {
+                return response()->json(['Error' => true, 'Mensaje' => 'El rol "Docentes" no existe en la base de datos.'], 400);
+            }
             // Guardar el docente
             $docenteData = [
                 'codigo' => $request->codigo,
