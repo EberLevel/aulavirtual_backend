@@ -13,7 +13,8 @@ class Pago extends Model
         'monto',
         'fecha_pago',
         'fecha_vencimiento',
-        'estado_id'
+        'estado_id',
+        'domain_id'
     ];
 
     public function estados()

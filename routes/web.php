@@ -184,8 +184,11 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('capacitaciones-docentes', 'CapacitacionController@listarDocentes');
 
     // para pagos
-    $router->get('pagos', 'PagoController@index');
+    $router->get('pagos/{domain_id}', 'PagoController@index');
+    $router->get('pagos/{domain_id}/{pago_id}/alumnos', 'PagoController@getPaymentByStudent');
     $router->post('pagos', 'PagoController@store');
+    $router->post('asignar-pagos', 'PagoController@assignPayment');
+    $router->post('pagos-por-alumnos', 'PagoController@uploadPaymentByStudent');
 
 
     $router->get('grupo-de-evaluaciones/{curso_id}', 'GrupoDeEvaluacionesController@index');
