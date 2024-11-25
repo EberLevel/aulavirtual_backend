@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Promocion;
 use App\Models\Alumno;
+use App\Models\PagoAlumno;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Traits\UserTrait;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Validator;
 
 class AlumnoController extends Controller
 {
@@ -254,6 +255,91 @@ public function getLoggedAlumno($alumno_id, $dominio)
     }
 
     return response()->json('Alumno no encontrado', 404);
+}
+
+public function paymentByStudent(Request $request, $id, $dominio)
+{
+    $available = $request->input('available', false);
+
+    // Construir la consulta base para los pagos del alumno
+    $query = PagoAlumno::with(['pago', 'estado'])
+        ->where('alumno_id', $id)
+        ->whereHas('pago', function ($q) use ($dominio) {
+            $q->where('domain_id', $dominio);
+        });
+
+    // Aplicar filtro según el valor de "available"
+    if ($available) {
+        // Solo incluir pagos pendientes (estado_id = 21)
+        $query->where('estado_id', 21);
+    }
+
+    // Ejecutar la consulta
+    $pagosAlumno = $query->get();
+
+    // Formatear la respuesta
+    $pagos = $pagosAlumno->map(function ($pagoAlumno) {
+        return [
+            'pago_alumno_id' => $pagoAlumno->pago->id,
+            'nombre' => $pagoAlumno->pago->nombre ?? 'Sin nombre',
+            'monto' => $pagoAlumno->pago->monto ?? 0,
+            'fecha_vencimiento' => $pagoAlumno->pago->fecha_vencimiento ?? null,
+            'estado' => $pagoAlumno->estado->nombre ?? 'Desconocido',
+            'estado_id' => $pagoAlumno->estado->id
+        ];
+    });
+
+    // Retornar la respuesta en formato JSON
+    return response()->json([
+        'alumno_id' => $id,
+        'pagos' => $pagos,
+    ]);
+}
+
+public function subirComprobante(Request $request)
+{
+
+    $validator = Validator::make(
+        $request->all(),
+        [
+            'pago_id' => 'required|integer',
+            'alumno_id' => 'required|integer',
+            'domain_id' => 'required|integer',
+            'voucher_pago' => 'required|file|mimes:jpg,jpeg,png',
+        ]
+    );
+
+    if ($validator->fails()) {
+        return response()->json([
+            'responseCode' => 422,
+            'message' => 'Datos inválidos.',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $pagoAlumno = PagoAlumno::where('pago_id', $request->pago_id)
+        ->where('alumno_id', $request->alumno_id)
+        ->first();
+
+    if (!$pagoAlumno) {
+        return response()->json(['error' => 'Pago no encontrado'], 404);
+    }
+
+    if (!empty($pagoAlumno->voucher_pago)) {
+        return response()->json([
+            'responseCode' => 409,
+            'message' => 'El voucher ya fue subido anteriormente.',
+        ], 409);
+    }
+
+    $file = $request->file('voucher_pago');
+    $base64Image = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file));
+    // Guardar el comprobante y cambiar el estado a '2' (validado)
+    $pagoAlumno->voucher_pago = $base64Image;
+    $pagoAlumno->estado_id = 2; // Cambiar estado a 'validado'
+    $pagoAlumno->save();
+
+    return response()->json(['message' => 'Comprobante subido exitosamente'], 200);
 }
 
 }

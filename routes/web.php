@@ -189,6 +189,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('pagos', 'PagoController@store');
     $router->post('asignar-pagos', 'PagoController@assignPayment');
     $router->post('pagos-por-alumnos', 'PagoController@uploadPaymentByStudent');
+    $router->post('pagos/{domain_id}/validar-pago', 'PagoController@validPayment');
 
 
     $router->get('grupo-de-evaluaciones/{curso_id}', 'GrupoDeEvaluacionesController@index');
@@ -204,6 +205,8 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->post('alumnos', 'AlumnoController@store');
     $router->put('alumnos/{id}/{domain_id}', 'AlumnoController@update');
     $router->delete('alumnos/{id}/{dominio}', 'AlumnoController@destroy');
+    $router->post('alumnos/{id}/{dominio}', 'AlumnoController@paymentByStudent');
+    $router->post('alumnos/subir-comprobante', 'AlumnoController@subirComprobante');
 
 
 
@@ -339,6 +342,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
 
     //estado
     $router->get('estados/{domain_id}', 'EstadoController@index');
+    $router->get('estados/{domain_id}/validate-payment', 'EstadoController@validatePayment');
     $router->post('estados/{domain_id}', 'EstadoController@store');
     $router->put('estados/{domain_id}/{id}', 'EstadoController@update');
     $router->delete('estados/{domain_id}/{id}', 'EstadoController@destroy');

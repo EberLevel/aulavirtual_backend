@@ -16,7 +16,17 @@ class PagoAlumno extends Model
     ];
 
     public function alumno()
-{
-    return $this->belongsTo(Alumno::class, 'alumno_id');
-}
+    {
+        return $this->belongsTo(Alumno::class, 'alumno_id');
+    }
+
+    public function pago()
+    {
+        return $this->belongsTo(Pago::class, 'pago_id');
+    }
+
+    public function estado()
+    {
+        return $this->belongsTo(Estado::class, 'estado_id');
+    }
 }
