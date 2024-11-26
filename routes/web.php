@@ -149,6 +149,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('cursos/{id}/syllabus', 'CursoController@getSyllabus');
     $router->get('cursos/carrera/{id}', 'CursoController@index');
     $router->get('unidades/all', 'CursoController@getAllCursos');
+    $router->get('cursos/plan-estudio/{planEstudioId}', 'CursoController@getCursosByPlanEstudio');
 
 
     $router->get('roles/{domain_id}', 'RolController@index');

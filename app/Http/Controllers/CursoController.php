@@ -81,6 +81,37 @@ class CursoController extends Controller
         return response()->json($courses);
     }
 
+    public function getCursosByPlanEstudio($planEstudioId)
+    {
+        $courses = Curso::join('plan_de_estudios', 'cursos.estado_id', '=', 'plan_de_estudios.id')
+            ->join('carreras', 'cursos.carrera_id', '=', 'carreras.id')
+            ->select(
+                'cursos.id as curso_id',
+                'cursos.nombre as curso_nombre',
+                'cursos.codigo as curso_codigo',
+                'cursos.cantidad_de_creditos',
+                'cursos.cantidad_de_horas',
+                'cursos.horas_practicas',
+                'cursos.porcentaje_de_creditos',
+                'cursos.syllabus',
+                'cursos.tema',
+                'cursos.fe_inicio',
+                'cursos.fe_fin',
+                'cursos.carrera_id',
+                'carreras.nombres as carrera_nombre',
+                'plan_de_estudios.nombre as plan_de_estudio_nombre'
+            )
+            ->where('plan_de_estudios.id', $planEstudioId)
+            ->get();
+    
+        if ($courses->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron cursos para este plan de estudios.'
+            ], 404);
+        }
+    
+        return response()->json($courses, 200);
+    }  
 
 
 
@@ -101,7 +132,7 @@ class CursoController extends Controller
             'tema' => 'required|string',
             'estadoId' => 'required|integer',
             'domain_id' => 'required',
-            // 'asignacionDocentesId' => 'required', // Elimina esta línea para que no sea requerido
+            'asignacionDocentesId' => 'required',
         ]);
 
         $curso = Curso::create([
@@ -173,6 +204,7 @@ class CursoController extends Controller
             'tema' => 'required|string',
             'estadoId' => 'required|integer',
             'domain_id' => 'required',
+            'asignacionDocentesId' => 'required',
         ]);
 
         $curso = Curso::findOrFail($id);
@@ -191,7 +223,7 @@ class CursoController extends Controller
             'tema' => $request->tema,
             'estado_id' => $request->estadoId,
             'domain_id' => $request->domain_id,
-            'docente_id' => is_array($request->asignacionDocentesId) ? null : $request->asignacionDocentesId, // Verifica si es null
+            'docente_id' => is_array($request->asignacionDocentesId) ? null : $request->asignacionDocentesId,
         ]);
 
         return response()->json($curso, 200);
@@ -216,10 +248,10 @@ class CursoController extends Controller
                 'docentes.nombres as docente_nombre'
             )
             ->get();
-    
+
         return response()->json($courses);
     }
-    
+
 
 
 
