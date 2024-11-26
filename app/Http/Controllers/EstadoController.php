@@ -15,6 +15,22 @@ class EstadoController extends Controller
         return response()->json($areas);
     }
 
+    public function validatePayment($domain_id)
+    {
+        $areas = Estado::where('domain_id', $domain_id)
+                                ->whereNull('deleted_at')
+                                ->whereIn('id', [1, 2, 21])
+                                ->get()
+                                ->map(function ($estado) {
+                                    return [
+                                        "id" => $estado->id,
+                                        "nombre" => $estado->nombre
+                                    ];
+                                });
+
+        return response()->json($areas);
+    }
+
     public function store(Request $request,$domain_id)
     {
         $this->validate($request, [
