@@ -24,13 +24,14 @@ class Evaluaciones extends Model
         'domain_id',
         'deleted_at',
         'grupo_de_evaluaciones_id',
-        'modalidad'
+        'modalidad',
+        'contenido'
     ];
 
     // Define relationships if needed
     public function tipoEvaluacion()
     {
-        return $this->belongsTo(TipoEvaluacion::class, 'tipo_evaluacion_id', 'nu_id_parametro');
+        return $this->belongsTo(tipoEvaluacion::class, 'tipo_evaluacion_id', 'nu_id_parametro');
     }
 
     public function estado()

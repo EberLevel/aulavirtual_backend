@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Evaluaciones;
+use App\Models\Evaluation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class EvaluacionesController extends Controller
 {
@@ -14,6 +17,9 @@ class EvaluacionesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    private $disk = "public";
+
     public function index($id)
     {
         $evaluaciones = Evaluaciones::leftJoin('estados', 'estados.id', '=', 'evaluaciones.estado_id')
@@ -26,10 +32,10 @@ class EvaluacionesController extends Controller
                 'tipo_evaluacion.tx_item_description as tipo_evaluacion_nombre'
             )
             ->get();
-    
+
         return response()->json($evaluaciones);
     }
-    
+
     public function getEvaluacionById($id)
     {
         // Buscar la evaluación por su ID
@@ -43,7 +49,8 @@ class EvaluacionesController extends Controller
             'domain_id',
             'porcentaje_asignado',
             'grupo_de_evaluaciones_id',
-            'modalidad'
+            'modalidad',
+            'contenido'
         )
             ->where('id', $id)
             ->first();
@@ -71,18 +78,18 @@ class EvaluacionesController extends Controller
             'grupo_de_evaluaciones_id' => 'required|integer',
             'modalidad' => 'required|in:0,1',
         ]);
-    
+
         $evaluacion = Evaluaciones::find($id);
-    
+
         if (!$evaluacion) {
             return response()->json(['message' => 'Evaluación no encontrada'], 404);
         }
-    
+
         $evaluacion->update($validatedData);
-    
+
         return response()->json($evaluacion);
     }
-    
+
 
 
     /**
@@ -103,14 +110,34 @@ class EvaluacionesController extends Controller
             'estado_id' => 'required',
             'domain_id' => 'required|integer',
             'grupo_de_evaluaciones_id' => 'required|integer',
-            'modalidad' => 'required|in:0,1'
+            'modalidad' => 'required|in:0,1',
+            'recursos' => 'array', // Puede ser un array de archivos
+            'recursos.*' => 'mimes:jpg,jpeg,png,pdf,mp4|max:10240',
         ]);
-    
+
         $validatedData['fecha_y_hora_programo'] = Carbon::parse($validatedData['fecha_y_hora_programo'])->format('Y-m-d H:i:s');
-    
+
         $evaluacion = Evaluaciones::create($validatedData);
-        return response()->json($evaluacion, 201);
-    }    
+
+        $fileUrls = [];
+
+        // dd($request);
+        foreach ($request->file('recursos') as $file) {
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('public/uploads', $fileName);
+            $fileUrls[] = url('storage/' . str_replace('public/', '', $path)); 
+        }
+
+        // Actualizar el examen con las URLs de los archivos
+        $evaluacion->contenido = json_encode($fileUrls);
+        $evaluacion->save();
+
+        return response()->json([
+            'message' => 'Examen guardado exitosamente con los archivos',
+            'fileUrls' => $fileUrls,
+            "evaluacion" => $evaluacion
+        ], 201);
+    }
 
 
     /**
@@ -208,14 +235,14 @@ class EvaluacionesController extends Controller
                 ->where('e.grupo_de_evaluaciones_id', $grupoId)
                 ->select(
                     'ea.alumno_id',
-                    DB::raw('AVG(ea.nota) as promedio_por_alumno') 
+                    DB::raw('AVG(ea.nota) as promedio_por_alumno')
                 )
                 ->groupBy('ea.alumno_id')
-                ->first(); 
+                ->first();
 
             return response()->json([
                 'success' => true,
-                'promedio' => $promedios->promedio_por_alumno ?? null 
+                'promedio' => $promedios->promedio_por_alumno ?? null
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -226,30 +253,70 @@ class EvaluacionesController extends Controller
     }
 
     public function getEvaluacionesPorGrupo($grupoId, $alumnoId)
-{
-    try {
-        $evaluaciones = DB::table('evaluaciones_alumno as ea')
-            ->join('evaluaciones as e', 'ea.evaluacion_id', '=', 'e.id')
-            ->where('e.grupo_de_evaluaciones_id', $grupoId)
-            ->where('ea.alumno_id', $alumnoId)
-            ->select(
-                'ea.nota',
-                'e.nombre',
-                'e.porcentaje_asignado',
-                DB::raw('(ea.nota * e.porcentaje_asignado / 100) as nota_porcentual')  // Aquí calculamos la nota porcentual
-            )
-            ->get();
+    {
+        try {
+            $evaluaciones = DB::table('evaluaciones_alumno as ea')
+                ->join('evaluaciones as e', 'ea.evaluacion_id', '=', 'e.id')
+                ->where('e.grupo_de_evaluaciones_id', $grupoId)
+                ->where('ea.alumno_id', $alumnoId)
+                ->select(
+                    'ea.nota',
+                    'e.nombre',
+                    'e.porcentaje_asignado',
+                    DB::raw('(ea.nota * e.porcentaje_asignado / 100) as nota_porcentual')  // Aquí calculamos la nota porcentual
+                )
+                ->get();
 
-        return response()->json([
-            'success' => true,
-            'evaluaciones' => $evaluaciones,
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error al obtener las evaluaciones: ' . $e->getMessage()
-        ], 500);
+            return response()->json([
+                'success' => true,
+                'evaluaciones' => $evaluaciones,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las evaluaciones: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function subirRecursos(Request $request, $evaluacion_id)
+    {
+    // dd($request, $evaluacion_id);
+
+    $this->validate($request, [
+        'recursos' => 'required|array',
+        'recursos.*' => 'file|mimes:jpg,png,pdf,mp4|max:10240' // Aceptar solo imágenes, PDFs y videos
+    ]);
+
+    $evaluacionId = $evaluacion_id;
+
+    // Crear un array para guardar las rutas de los archivos
+    $rutas = [];
+
+    // Subir cada archivo y guardar su ruta
+    foreach ($request->file('recursos') as $file) {
+        // Generar un nombre único para cada archivo
+        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();  // Usar UUID para un nombre único
+
+        // Guardar el archivo en la carpeta 'uploads' dentro de 'public' con el nombre único
+        $path = $file->storeAs('uploads', $filename, $this->disk);  // Guardar en public/uploads
+
+        // Agregar la ruta del archivo al array
+        $rutas[] = $path;
+    }
+
+    // Convertir el array de rutas a formato JSON
+    $evaluacion = Evaluaciones::find($evaluacionId);
+    $evaluacionesJson = json_encode($rutas);
+
+    if ($evaluacion) {
+        // Actualizar el campo 'contenido' de la evaluación con las nuevas rutas
+        $evaluacion->contenido = $evaluacionesJson;  // Guardar las rutas en el campo 'contenido'
+        $evaluacion->save();
+
+        return response()->json(['message' => 'Archivos subidos correctamente.']);
+    } else {
+        return response()->json(['error' => 'Evaluación no encontrada.'], 404);
     }
 }
-
 }
