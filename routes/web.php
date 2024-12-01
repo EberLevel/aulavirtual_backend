@@ -224,6 +224,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //evaluacion routes
     $router->post('evaluaciones', 'EvaluacionesController@store');
     $router->get('evaluaciones/{id}', 'EvaluacionesController@index');
+    $router->post('evaluaciones/recursos/{evaluacion_id}', 'EvaluacionesController@subirRecursos');
     $router->put('evaluaciones/{id}', 'EvaluacionesController@update');
     $router->delete('evaluaciones/{id}', 'EvaluacionesController@destroy');
     $router->get('evaluaciones/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getNotasPorAlumnoYGrupo');
