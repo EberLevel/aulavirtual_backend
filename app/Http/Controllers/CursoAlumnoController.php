@@ -35,36 +35,33 @@ class CursoAlumnoController extends Controller
                     'curso_alumno.estado_id as estado_id'
                 )
                 ->get();
-    
+
             return response()->json($courses);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
-    }   
+    }
 
     public function indexByAlumno($alumno_id)
     {
         try {
-            $courses = Curso::leftJoin('curso_alumno', 'curso_alumno.curso_id', '=', 'cursos.id')
-                ->leftJoin('ciclos', 'ciclos.id', '=', 'cursos.ciclo_id')  // Join con la tabla ciclos
-                ->leftJoin('modulos_formativos', 'modulos_formativos.id', '=', 'cursos.modulo_formativo_id')  // Join con la tabla modulos_formativos
-                ->leftJoin('area_de_formacion', 'area_de_formacion.id', '=', 'cursos.area_de_formacion_id')  // Join con la tabla area_de_formacion
-                ->leftJoin('estados', 'estados.id', '=', 'cursos.estado_id')  // Join con la tabla estados
-                ->leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
-                ->leftJoin('alumnos', 'alumnos.id', '=', 'curso_alumno.alumno_id')
-                // Agregar filtro para estadoAlumno
-                ->where('curso_alumno.alumno_id', $alumno_id)
+            $courses = Curso::leftJoin('carreras', 'carreras.id', '=', 'cursos.carrera_id')
+                ->leftJoin('alumnos', 'alumnos.carrera_id', '=', 'carreras.id') // Relación directa con la carrera del alumno
+                ->leftJoin('plan_de_estudios', 'plan_de_estudios.id', '=', 'cursos.estado_id') // Relación con el plan de estudios
+                ->leftJoin('ciclos', 'ciclos.id', '=', 'cursos.ciclo_id') // Relación con ciclos
+                ->leftJoin('modulos_formativos', 'modulos_formativos.id', '=', 'cursos.modulo_formativo_id') 
+                ->leftJoin('area_de_formacion', 'area_de_formacion.id', '=', 'cursos.area_de_formacion_id')
+                ->where('alumnos.id', $alumno_id) 
                 ->where('alumnos.estadoAlumno', '!=', 'RETIRADO')
-                ->where('curso_alumno.estado_id', 2)
                 ->select(
                     'cursos.*',
-                    'ciclos.nombre as ciclo_nombre',  // Obtiene el nombre del ciclo
-                    'modulos_formativos.nombre as modulo_formativo_nombre',  // Obtiene el nombre del módulo formativo
-                    'area_de_formacion.nombre as area_de_formacion_nombre',  // Obtiene el nombre del área de formación
-                    'carreras.nombres as carrera_nombre',
-                    'estados.nombre as estado_nombre',  // Obtiene el nombre del estado
-                    'alumnos.id as alumno_id',
-                    'curso_alumno.estado_id as estado_id'
+                    'carreras.nombres as carrera_nombre', // Nombre de la carrera
+                    'plan_de_estudios.nombre as plan_estudio_nombre', // Nombre del plan de estudio
+                    'ciclos.nombre as ciclo_nombre', // Nombre del ciclo
+                    'modulos_formativos.nombre as modulo_formativo_nombre', // Nombre del módulo (Competencia)
+                    'modulos_formativos.nombre as competencia_nombre', // Alias para Competencia
+                    'area_de_formacion.nombre as area_de_formacion_nombre', // Nombre del área de formación
+                    'alumnos.id as alumno_id' // ID del alumno
                 )
                 ->get();
     
@@ -73,7 +70,6 @@ class CursoAlumnoController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
 
     public function updateCursoEstado(Request $request)
     {
@@ -82,32 +78,32 @@ class CursoAlumnoController extends Controller
             'estadoId' => 'required|integer',
             'alumnoId' => 'required|integer',
         ];
-    
+
         $validator = Validator::make($request->all(), $rules);
-    
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-    
+
         $validatedData = $validator->validated();
-    
+
         // Encuentra el curso alumno que corresponde
         $cursoAlumno = CursoAlumno::where('curso_id', $validatedData['cursoId'])
             ->where('alumno_id', $validatedData['alumnoId'])
             ->first();
-    
+
         if ($cursoAlumno) {
             $cursoAlumno->estado_id = $validatedData['estadoId'];
             $cursoAlumno->save();
-    
+
             return response()->json(['message' => 'Estado actualizado con éxito.'], 200);
         } else {
             return response()->json(['message' => 'Curso o alumno no encontrados.'], 404);
         }
     }
-    
-    
-    
+
+
+
 
 
 

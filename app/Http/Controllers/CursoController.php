@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
+use Illuminate\Support\Facades\DB;
 
 class CursoController extends Controller
 {
@@ -81,10 +82,11 @@ class CursoController extends Controller
         return response()->json($courses);
     }
 
-    public function getCursosByPlanEstudio($planEstudioId)
+    public function getCursosByPlanEstudioYCarrera($planEstudioId, $carreraId)
     {
-        $courses = Curso::join('plan_de_estudios', 'cursos.estado_id', '=', 'plan_de_estudios.id')
+        return DB::table('cursos')
             ->join('carreras', 'cursos.carrera_id', '=', 'carreras.id')
+            ->join('plan_de_estudios', 'cursos.estado_id', '=', 'plan_de_estudios.id')
             ->select(
                 'cursos.id as curso_id',
                 'cursos.nombre as curso_nombre',
@@ -101,17 +103,11 @@ class CursoController extends Controller
                 'carreras.nombres as carrera_nombre',
                 'plan_de_estudios.nombre as plan_de_estudio_nombre'
             )
-            ->where('plan_de_estudios.id', $planEstudioId)
+            ->where('cursos.estado_id', $planEstudioId) // Filtra por plan de estudio
+            ->where('cursos.carrera_id', $carreraId) // Filtra por carrera
             ->get();
+    }
     
-        if ($courses->isEmpty()) {
-            return response()->json([
-                'message' => 'No se encontraron cursos para este plan de estudios.'
-            ], 404);
-        }
-    
-        return response()->json($courses, 200);
-    }  
 
 
 
