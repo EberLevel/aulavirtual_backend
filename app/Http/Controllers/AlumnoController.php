@@ -221,16 +221,21 @@ class AlumnoController extends Controller
     }
 
     // Mostrar un alumno por ID y dominio
-    public function show($id, $dominio)
+    public function show($id)
     {
-        $alumno = Alumno::where('id', $id)->where('domain_id', $dominio)->first();
-
+        // Buscar al alumno por ID
+        $alumno = Alumno::find($id);
+    
         if ($alumno) {
-            return response()->json($alumno, 200);
+            return response()->json($alumno, 200); // Retorna el alumno si se encuentra
         }
-
+    
+        // Respuesta en caso de que no se encuentre el alumno
         return response()->json(['message' => 'Alumno no encontrado'], 404);
     }
+    
+    
+    
 
     // Obtener el alumno logueado
     public function getLoggedAlumno($alumno_id, $dominio)

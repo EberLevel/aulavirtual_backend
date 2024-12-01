@@ -87,26 +87,22 @@ class CursoController extends Controller
         return DB::table('cursos')
             ->join('carreras', 'cursos.carrera_id', '=', 'carreras.id')
             ->join('plan_de_estudios', 'cursos.estado_id', '=', 'plan_de_estudios.id')
+            ->leftJoin('ciclos', 'cursos.ciclo_id', '=', 'ciclos.id')
+            ->leftJoin('area_de_formacion', 'cursos.area_de_formacion_id', '=', 'area_de_formacion.id')
+            ->leftJoin('modulos_formativos', 'cursos.modulo_formativo_id', '=', 'modulos_formativos.id')
             ->select(
-                'cursos.id as curso_id',
-                'cursos.nombre as curso_nombre',
-                'cursos.codigo as curso_codigo',
-                'cursos.cantidad_de_creditos',
-                'cursos.cantidad_de_horas',
-                'cursos.horas_practicas',
-                'cursos.porcentaje_de_creditos',
-                'cursos.syllabus',
-                'cursos.tema',
-                'cursos.fe_inicio',
-                'cursos.fe_fin',
-                'cursos.carrera_id',
+                'cursos.*',
                 'carreras.nombres as carrera_nombre',
-                'plan_de_estudios.nombre as plan_de_estudio_nombre'
+                'plan_de_estudios.nombre as plan_de_estudio_nombre',
+                'ciclos.nombre as ciclo_nombre', // Nombre del ciclo
+                'area_de_formacion.nombre as area_formacion_nombre', // Nombre del área de formación
+                'modulos_formativos.nombre as modulo_formativo_nombre' // Nombre del módulo formativo
             )
-            ->where('cursos.estado_id', $planEstudioId) // Filtra por plan de estudio
-            ->where('cursos.carrera_id', $carreraId) // Filtra por carrera
+            ->where('cursos.estado_id', $planEstudioId)
+            ->where('cursos.carrera_id', $carreraId)
             ->get();
     }
+    
     
 
 
