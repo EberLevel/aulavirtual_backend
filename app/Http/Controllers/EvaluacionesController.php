@@ -80,7 +80,7 @@ class EvaluacionesController extends Controller
             'modalidad' => 'required|in:0,1',
             'recursos' => 'array', // Puede ser un array de archivos
             'recursos.*' => 'file|max:10240',
-            'texto_enrriquesido' => 'required|string'
+            'texto_enrriquesido' => 'nullable|string'
         ]);
 
 
@@ -122,6 +122,8 @@ class EvaluacionesController extends Controller
      */
     public function store(Request $request)
     {
+
+        return $request->input('texto_enrriquesido');
         $validatedData = $this->validate($request, [
             'nombre' => 'required|string|max:255',
             'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro',
@@ -134,8 +136,7 @@ class EvaluacionesController extends Controller
             'grupo_de_evaluaciones_id' => 'required|integer',
             'modalidad' => 'required|in:0,1',
             'recursos' => 'array', // Puede ser un array de archivos
-            'recursos.*' => 'file|max:10240',
-            'texto_enrriquesido' => 'required|string'
+            'recursos.*' => 'file|max:10240'
         ]);
 
         $validatedData['fecha_y_hora_programo'] = Carbon::parse($validatedData['fecha_y_hora_programo'])->format('Y-m-d H:i:s');
@@ -234,6 +235,7 @@ class EvaluacionesController extends Controller
                     'e.observaciones',
                     'e.modalidad',
                     'e.contenido',
+                    'ea.asistencia',
                     'es.nombre as estado_nombre' // Traemos el nombre del estado desde la tabla estados
                 )
                 ->get();
