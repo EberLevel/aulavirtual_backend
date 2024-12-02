@@ -42,7 +42,8 @@ class EvaluacionesByModalidadController extends Controller
 
         $evaluacionesAlumnos = DB::table('evaluaciones_alumno')
             ->join('alumnos', 'alumnos.id', '=', 'evaluaciones_alumno.alumno_id')
-            ->select('alumnos.*', 'evaluaciones_alumno.nota', 'evaluaciones_alumno.asistencia', 'evaluaciones_alumno.evaluacion_id')
+            ->join('evaluaciones', 'evaluaciones.id', '=', 'evaluaciones_alumno.evaluacion_id')
+            ->select('alumnos.*', 'evaluaciones_alumno.nota', 'evaluaciones_alumno.asistencia', 'evaluaciones_alumno.evaluacion_id', 'evaluaciones.tipo_evaluacion_id')
             ->where('evaluaciones_alumno.evaluacion_id', '=', $id)
             ->get();
 

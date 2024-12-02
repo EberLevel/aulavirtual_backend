@@ -231,7 +231,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('evaluaciones/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getNotasPorAlumnoYGrupo');
     $router->get('evaluacionesByAlumno/alumno/{alumnoId}/{grupoId}', 'EvaluacionesController@getPromedioPorAlumnoYGrupo');
     $router->get('evaluacion/{id}', 'EvaluacionesController@getEvaluacionById');
-    $router->put('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
+    $router->post('evaluacion/{id}', 'EvaluacionesController@updateEvaluacionById');
     $router->get('evaluacionesBygrupo/grupo/{grupoId}/{alumnoId}', 'EvaluacionesController@getEvaluacionesPorGrupo');
 
 

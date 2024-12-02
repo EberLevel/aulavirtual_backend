@@ -25,7 +25,8 @@ class Evaluaciones extends Model
         'deleted_at',
         'grupo_de_evaluaciones_id',
         'modalidad',
-        'contenido'
+        'contenido',
+        'texto_enrriquesido'
     ];
 
     // Define relationships if needed

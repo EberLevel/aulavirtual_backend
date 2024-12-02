@@ -50,7 +50,8 @@ class EvaluacionesController extends Controller
             'porcentaje_asignado',
             'grupo_de_evaluaciones_id',
             'modalidad',
-            'contenido'
+            'contenido',
+            'texto_enrriquesido'
         )
             ->where('id', $id)
             ->first();
@@ -77,7 +78,12 @@ class EvaluacionesController extends Controller
             'domain_id' => 'required|integer',
             'grupo_de_evaluaciones_id' => 'required|integer',
             'modalidad' => 'required|in:0,1',
+            'recursos' => 'array', // Puede ser un array de archivos
+            'recursos.*' => 'file|max:10240',
+            'texto_enrriquesido' => 'nullable|string'
         ]);
+
+
 
         $evaluacion = Evaluaciones::find($id);
 
@@ -86,6 +92,22 @@ class EvaluacionesController extends Controller
         }
 
         $evaluacion->update($validatedData);
+
+        $fileUrls = [];
+        if ($request->hasFile('recursos')) {
+            foreach ($request->file('recursos') as $file) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('public/uploads', $fileName);
+                $fileUrls[] = url('storage/' . str_replace('public/', '', $path));
+            }
+        }
+
+        // Guardamos URLs de archivos si existen
+        if (!empty($fileUrls)) {
+            $evaluacion->contenido = json_encode($fileUrls);
+        }
+
+        $evaluacion->save();
 
         return response()->json($evaluacion);
     }
@@ -100,6 +122,8 @@ class EvaluacionesController extends Controller
      */
     public function store(Request $request)
     {
+
+        return $request->input('texto_enrriquesido');
         $validatedData = $this->validate($request, [
             'nombre' => 'required|string|max:255',
             'tipo_evaluacion_id' => 'nullable|exists:t_g_parametros,nu_id_parametro',
@@ -112,7 +136,7 @@ class EvaluacionesController extends Controller
             'grupo_de_evaluaciones_id' => 'required|integer',
             'modalidad' => 'required|in:0,1',
             'recursos' => 'array', // Puede ser un array de archivos
-            'recursos.*' => 'mimes:jpg,jpeg,png,pdf,mp4|max:10240',
+            'recursos.*' => 'file|max:10240'
         ]);
 
         $validatedData['fecha_y_hora_programo'] = Carbon::parse($validatedData['fecha_y_hora_programo'])->format('Y-m-d H:i:s');
@@ -125,7 +149,7 @@ class EvaluacionesController extends Controller
         foreach ($request->file('recursos') as $file) {
             $fileName = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('public/uploads', $fileName);
-            $fileUrls[] = url('storage/' . str_replace('public/', '', $path)); 
+            $fileUrls[] = url('storage/' . str_replace('public/', '', $path));
         }
 
         // Actualizar el examen con las URLs de los archivos
@@ -210,6 +234,8 @@ class EvaluacionesController extends Controller
                     'e.fecha_y_hora_realizo',
                     'e.observaciones',
                     'e.modalidad',
+                    'e.contenido',
+                    'ea.asistencia',
                     'es.nombre as estado_nombre' // Traemos el nombre del estado desde la tabla estados
                 )
                 ->get();
@@ -281,42 +307,42 @@ class EvaluacionesController extends Controller
 
     public function subirRecursos(Request $request, $evaluacion_id)
     {
-    // dd($request, $evaluacion_id);
+        // dd($request, $evaluacion_id);
 
-    $this->validate($request, [
-        'recursos' => 'required|array',
-        'recursos.*' => 'file|mimes:jpg,png,pdf,mp4|max:10240' // Aceptar solo imágenes, PDFs y videos
-    ]);
+        $this->validate($request, [
+            'recursos' => 'required|array',
+            'recursos.*' => 'file|mimes:jpg,png,pdf,mp4|max:10240' // Aceptar solo imágenes, PDFs y videos
+        ]);
 
-    $evaluacionId = $evaluacion_id;
+        $evaluacionId = $evaluacion_id;
 
-    // Crear un array para guardar las rutas de los archivos
-    $rutas = [];
+        // Crear un array para guardar las rutas de los archivos
+        $rutas = [];
 
-    // Subir cada archivo y guardar su ruta
-    foreach ($request->file('recursos') as $file) {
-        // Generar un nombre único para cada archivo
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();  // Usar UUID para un nombre único
+        // Subir cada archivo y guardar su ruta
+        foreach ($request->file('recursos') as $file) {
+            // Generar un nombre único para cada archivo
+            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();  // Usar UUID para un nombre único
 
-        // Guardar el archivo en la carpeta 'uploads' dentro de 'public' con el nombre único
-        $path = $file->storeAs('uploads', $filename, $this->disk);  // Guardar en public/uploads
+            // Guardar el archivo en la carpeta 'uploads' dentro de 'public' con el nombre único
+            $path = $file->storeAs('uploads', $filename, $this->disk);  // Guardar en public/uploads
 
-        // Agregar la ruta del archivo al array
-        $rutas[] = $path;
+            // Agregar la ruta del archivo al array
+            $rutas[] = $path;
+        }
+
+        // Convertir el array de rutas a formato JSON
+        $evaluacion = Evaluaciones::find($evaluacionId);
+        $evaluacionesJson = json_encode($rutas);
+
+        if ($evaluacion) {
+            // Actualizar el campo 'contenido' de la evaluación con las nuevas rutas
+            $evaluacion->contenido = $evaluacionesJson;  // Guardar las rutas en el campo 'contenido'
+            $evaluacion->save();
+
+            return response()->json(['message' => 'Archivos subidos correctamente.']);
+        } else {
+            return response()->json(['error' => 'Evaluación no encontrada.'], 404);
+        }
     }
-
-    // Convertir el array de rutas a formato JSON
-    $evaluacion = Evaluaciones::find($evaluacionId);
-    $evaluacionesJson = json_encode($rutas);
-
-    if ($evaluacion) {
-        // Actualizar el campo 'contenido' de la evaluación con las nuevas rutas
-        $evaluacion->contenido = $evaluacionesJson;  // Guardar las rutas en el campo 'contenido'
-        $evaluacion->save();
-
-        return response()->json(['message' => 'Archivos subidos correctamente.']);
-    } else {
-        return response()->json(['error' => 'Evaluación no encontrada.'], 404);
-    }
-}
 }
