@@ -236,7 +236,8 @@ class EvaluacionesController extends Controller
                     'e.modalidad',
                     'e.contenido',
                     'ea.asistencia',
-                    'es.nombre as estado_nombre' // Traemos el nombre del estado desde la tabla estados
+                    'es.nombre as estado_nombre', // Traemos el nombre del estado desde la tabla estados
+                    'e.tipo_evaluacion_id'
                 )
                 ->get();
 
